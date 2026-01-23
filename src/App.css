@@ -1,0 +1,464 @@
+.app {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 2rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.app-header h1 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+  color: #1a1a1a;
+}
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.grouping-selector {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #666;
+}
+
+.grouping-selector select {
+  padding: 0.375rem 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: white;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.task-input {
+  margin-bottom: 1.5rem;
+}
+
+.task-input input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.15s;
+  box-sizing: border-box;
+}
+
+.task-input input:focus {
+  border-color: #666;
+}
+
+.task-input input::placeholder {
+  color: #aaa;
+}
+
+/* Grouped list */
+.grouped-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.task-group {
+  background: #fafafa;
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.group-header {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #444;
+  margin: 0 0 0.75rem 0;
+  padding-left: 0.75rem;
+  border-left: 3px solid #888;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.group-header.unset {
+  border-left-color: #ccc;
+  color: #888;
+}
+
+.group-count {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #999;
+  background: #eee;
+  padding: 0.125rem 0.5rem;
+  border-radius: 10px;
+}
+
+.group-tasks {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+/* Task item */
+.task-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.625rem 0.5rem;
+  border-radius: 6px;
+  transition: background-color 0.1s;
+}
+
+.task-item:hover {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.task-checkbox {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #ccc;
+  border-radius: 50%;
+  background: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+  transition: all 0.15s;
+  font-size: 0.75rem;
+  color: white;
+}
+
+.task-checkbox:hover {
+  border-color: #888;
+}
+
+.task-checkbox.completed {
+  background: #22c55e;
+  border-color: #22c55e;
+}
+
+.task-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.task-title {
+  color: #1a1a1a;
+  line-height: 1.4;
+}
+
+.task-title.completed {
+  color: #999;
+  text-decoration: line-through;
+}
+
+.task-project {
+  font-size: 0.75rem;
+  color: #888;
+}
+
+/* Flat task list */
+.task-list {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Task item clickable */
+.task-item {
+  cursor: pointer;
+}
+
+/* Task detail overlay */
+.task-detail-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 10vh;
+  z-index: 100;
+}
+
+.task-detail {
+  background: white;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+}
+
+.task-detail-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 1.25rem 1.25rem 0;
+}
+
+.task-detail-title {
+  flex: 1;
+  font-size: 1.125rem;
+  font-weight: 500;
+  border: none;
+  outline: none;
+  padding: 0;
+  background: transparent;
+  color: #1a1a1a;
+}
+
+.task-detail-title::placeholder {
+  color: #aaa;
+}
+
+.task-detail-close {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: #f0f0f0;
+  border-radius: 6px;
+  font-size: 1.25rem;
+  color: #666;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  padding: 0;
+}
+
+.task-detail-close:hover {
+  background: #e5e5e5;
+}
+
+.task-detail-body {
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.task-detail-field label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 0.5rem;
+}
+
+.task-detail-field textarea {
+  width: 100%;
+  padding: 0.625rem 0.75rem;
+  font-size: 0.9375rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  outline: none;
+  resize: vertical;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.task-detail-field textarea:focus {
+  border-color: #888;
+}
+
+.task-detail-field select {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.9375rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+}
+
+/* Attribute options as buttons */
+.attribute-options {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.attribute-option {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.875rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.1s;
+}
+
+.attribute-option:hover {
+  border-color: #aaa;
+}
+
+.attribute-option.selected {
+  background: var(--option-color, #1a1a1a);
+  border-color: var(--option-color, #1a1a1a);
+  color: white;
+}
+
+.task-detail-footer {
+  padding: 1rem 1.25rem;
+  border-top: 1px solid #eee;
+}
+
+.delete-button {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #dc2626;
+  cursor: pointer;
+}
+
+.delete-button:hover {
+  background: #fef2f2;
+}
+
+/* Project manager */
+.projects-toggle {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.875rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+  color: #666;
+}
+
+.projects-toggle:hover {
+  border-color: #aaa;
+}
+
+.projects-dropdown {
+  position: relative;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  min-width: 200px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.projects-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.625rem 0.75rem;
+  border-bottom: 1px solid #eee;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.projects-close {
+  width: 20px;
+  height: 20px;
+  border: none;
+  background: transparent;
+  font-size: 1rem;
+  color: #888;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.projects-list {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.project-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+}
+
+.project-item:hover {
+  background: #fafafa;
+}
+
+.project-delete {
+  width: 20px;
+  height: 20px;
+  border: none;
+  background: transparent;
+  font-size: 1rem;
+  color: #ccc;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  opacity: 0;
+}
+
+.project-item:hover .project-delete {
+  opacity: 1;
+}
+
+.project-delete:hover {
+  color: #dc2626;
+}
+
+.projects-empty {
+  padding: 1rem 0.75rem;
+  font-size: 0.875rem;
+  color: #aaa;
+  text-align: center;
+}
+
+.projects-add {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border-top: 1px solid #eee;
+}
+
+.projects-add input {
+  flex: 1;
+  padding: 0.375rem 0.5rem;
+  font-size: 0.875rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  outline: none;
+}
+
+.projects-add input:focus {
+  border-color: #888;
+}
+
+.projects-add button {
+  padding: 0.375rem 0.625rem;
+  font-size: 0.875rem;
+  border: none;
+  border-radius: 4px;
+  background: #1a1a1a;
+  color: white;
+  cursor: pointer;
+}
+
+.projects-add button:hover {
+  background: #333;
+}
