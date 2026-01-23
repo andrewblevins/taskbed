@@ -7,12 +7,22 @@ export interface Task {
   attributes: Record<string, string>; // flexible attributes like { energy: "high", context: "home" }
   createdAt: number;
   completedAt?: number;
+  order?: number; // for sorting within groups
+}
+
+export interface Area {
+  id: string;
+  name: string;
+  order: number;
+  createdAt: number;
 }
 
 export interface Project {
   id: string;
   name: string;
   color?: string;
+  areaId?: string; // optional - projects can be in an area or standalone
+  order: number;
   createdAt: number;
 }
 

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Import Things Data</title>
+  <style>
+    body { font-family: system-ui; padding: 40px; max-width: 600px; margin: 0 auto; }
+    button { padding: 12px 24px; font-size: 16px; cursor: pointer; }
+    .success { color: green; margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <h1>Import Things Data to Taskbed</h1>
+  <p>Click the button below to import your Things tasks and projects.</p>
+  <button onclick="importData()">Import Data</button>
+  <div id="status"></div>
+
+  <script>
+    async function importData() {
+      try {
+        const response = await fetch('/things-import.json');
+        const data = await response.json();
+        localStorage.setItem('taskbed-storage', JSON.stringify(data));
+        document.getElementById('status').innerHTML = '<p class="success">✓ Imported ' + data.state.tasks.length + ' tasks and ' + data.state.projects.length + ' projects. <a href="/">Go to Taskbed</a></p>';
+      } catch (e) {
+        document.getElementById('status').innerHTML = '<p style="color:red">Error: ' + e.message + '</p>';
+      }
+    }
+  </script>
+</body>
+</html>

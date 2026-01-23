@@ -1,73 +1,43 @@
-# React + TypeScript + Vite
+# Taskbed
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A flexible task manager inspired by Things, with built-in support for energy-based task categorization.
 
-Currently, two official plugins are available:
+## Why Taskbed?
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Traditional task managers focus on due dates and priorities, but often what determines whether you'll actually complete a task is how much energy it requires versus how much energy you have. Taskbed lets you categorize tasks by energy level (High/Medium/Low) and view them grouped accordingly—so when you're feeling drained, you can tackle low-energy tasks, and when you're fired up, you can take on the big stuff.
 
-## React Compiler
+## Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Energy-based grouping** - Tasks are grouped by energy level (High, Medium, Low) by default
+- **Flexible attributes** - Create custom attributes beyond energy (context, type, etc.)
+- **Projects** - Organize tasks into projects
+- **Persistent storage** - All data saved to localStorage
+- **Minimal UI** - Clean interface focused on getting things done
 
-## Expanding the ESLint configuration
+## Getting Started
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+```bash
+# Install dependencies
+npm install
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+# Start development server
+npm run dev
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+# Build for production
+npm run build
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Usage
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+1. **Add a task** - Type in the input field and press Enter
+2. **Edit a task** - Click on a task to open the detail panel
+3. **Set energy level** - In the detail panel, select High/Medium/Low
+4. **Complete a task** - Click the checkbox
+5. **Change grouping** - Use the dropdown in the header to group by different attributes
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## Tech Stack
+
+- React 19
+- TypeScript
+- Zustand (state management)
+- Vite
