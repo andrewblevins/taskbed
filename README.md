@@ -1,43 +1,49 @@
 # Taskbed
 
-A flexible task manager inspired by Things, with built-in support for energy-based task categorization.
+A GTD-style task manager that treats context lists as first-class citizens.
 
 ## Why Taskbed?
 
-Traditional task managers focus on due dates and priorities, but often what determines whether you'll actually complete a task is how much energy it requires versus how much energy you have. Taskbed lets you categorize tasks by energy level (High/Medium/Low) and view them grouped accordingly—so when you're feeling drained, you can tackle low-energy tasks, and when you're fired up, you can take on the big stuff.
+Most task apps (Things, Todoist, etc.) bury tasks inside projects. To find what to do next, you scan through every project looking for actionable items. This breaks GTD's core workflow: context-based next action lists.
+
+In orthodox GTD, you look at @phone and see *everything* you can do with a phone right now—regardless of which project it belongs to. Projects are just metadata, not containers.
+
+Taskbed does this. Tasks live in flat lists filtered by context (@phone, @computer, @errands). Projects are attributes you can attach, not buckets that hide your work.
 
 ## Features
 
-- **Energy-based grouping** - Tasks are grouped by energy level (High, Medium, Low) by default
-- **Flexible attributes** - Create custom attributes beyond energy (context, type, etc.)
-- **Projects** - Organize tasks into projects
-- **Persistent storage** - All data saved to localStorage
-- **Minimal UI** - Clean interface focused on getting things done
+- **Context tags** - Filter by @phone, @computer, @errands, @home, @anywhere, @ai
+- **Projects as metadata** - Assign projects to tasks without nesting
+- **GTD status** - Active, Waiting For (with who/duration tracking), Someday/Maybe
+- **Due dates** - With overdue highlighting
+- **Energy levels** - High/Medium/Low for matching tasks to your state
+- **Areas** - Group projects by life area (Work, Home, etc.)
+- **Weekly Review** - Built-in review workflow
+- **Keyboard shortcuts** - Quick capture, navigation, completion
 
 ## Getting Started
 
 ```bash
-# Install dependencies
 npm install
-
-# Start development server
 npm run dev
-
-# Build for production
-npm run build
 ```
 
-## Usage
+Opens at http://localhost:5173
 
-1. **Add a task** - Type in the input field and press Enter
-2. **Edit a task** - Click on a task to open the detail panel
-3. **Set energy level** - In the detail panel, select High/Medium/Low
-4. **Complete a task** - Click the checkbox
-5. **Change grouping** - Use the dropdown in the header to group by different attributes
+## Data
+
+Tasks are stored in `data/taskbed.json`. The app also persists to localStorage for fast startup.
+
+## AI Integration
+
+There's a companion MCP server that lets Claude Desktop and Claude Code manage tasks via natural language:
+
+- [taskbed-mcp](https://github.com/andrewblevins/taskbed-mcp)
+
+Example: "Add a task to call the dentist, tag it @phone, due Tuesday"
 
 ## Tech Stack
 
-- React 19
-- TypeScript
-- Zustand (state management)
+- React 19 + TypeScript
+- Zustand (state management with localStorage persist)
 - Vite
