@@ -283,7 +283,9 @@ function ReviewProjects({ onNext, onPrev }: { onNext: () => void; onPrev: () => 
   const tasks = useStore((s) => s.tasks);
   const addTask = useStore((s) => s.addTask);
   const deleteProject = useStore((s) => s.deleteProject);
+  const completeProject = useStore((s) => s.completeProject);
   const [newTaskInputs, setNewTaskInputs] = useState<Record<string, string>>({});
+  const [completedCount, setCompletedCount] = useState(0);
 
   const getProjectTaskCount = (projectId: string) => {
     return tasks.filter((t) => t.projectId === projectId && !t.completed).length;
@@ -297,7 +299,15 @@ function ReviewProjects({ onNext, onPrev }: { onNext: () => void; onPrev: () => 
     }
   };
 
-  const projectsWithCounts = projects.map((p) => ({
+  const handleCompleteProject = (projectId: string) => {
+    completeProject(projectId);
+    setCompletedCount((c) => c + 1);
+  };
+
+  // Filter out already-completed projects
+  const activeProjects = projects.filter((p) => !p.completed);
+
+  const projectsWithCounts = activeProjects.map((p) => ({
     ...p,
     taskCount: getProjectTaskCount(p.id),
   }));
@@ -341,10 +351,16 @@ function ReviewProjects({ onNext, onPrev }: { onNext: () => void; onPrev: () => 
                     Add
                   </button>
                   <button
+                    className="review-btn small complete"
+                    onClick={() => handleCompleteProject(project.id)}
+                  >
+                    Complete
+                  </button>
+                  <button
                     className="review-btn small danger"
                     onClick={() => deleteProject(project.id)}
                   >
-                    Delete Project
+                    Delete
                   </button>
                 </div>
               </li>
@@ -359,8 +375,24 @@ function ReviewProjects({ onNext, onPrev }: { onNext: () => void; onPrev: () => 
           <ul className="review-list project-list">
             {healthyProjects.map((project) => (
               <li key={project.id} className="review-list-item healthy">
-                <span className="project-name">{project.name}</span>
-                <span className="project-count">{project.taskCount} tasks</span>
+                <div className="project-header">
+                  <span className="project-name">{project.name}</span>
+                  <span className="project-count">{project.taskCount} tasks</span>
+                </div>
+                <div className="project-actions">
+                  <button
+                    className="review-btn small complete"
+                    onClick={() => handleCompleteProject(project.id)}
+                  >
+                    Complete
+                  </button>
+                  <button
+                    className="review-btn small danger"
+                    onClick={() => deleteProject(project.id)}
+                  >
+                    Delete
+                  </button>
+                </div>
               </li>
             ))}
           </ul>
@@ -376,7 +408,7 @@ function ReviewProjects({ onNext, onPrev }: { onNext: () => void; onPrev: () => 
           ← Back
         </button>
         <span className="review-count">
-          {stuckProjects.length} stuck · {healthyProjects.length} healthy
+          {stuckProjects.length} stuck · {healthyProjects.length} healthy{completedCount > 0 ? ` · ${completedCount} completed` : ''}
         </span>
         <button className="review-btn primary" onClick={onNext}>
           Next →

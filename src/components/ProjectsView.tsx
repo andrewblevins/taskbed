@@ -25,7 +25,7 @@ import type { Project, Area } from '../types';
 function DraggableProject({ project }: { project: Project }) {
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(project.name);
-  const { updateProject, deleteProject, tasks } = useStore();
+  const { updateProject, deleteProject, completeProject, tasks } = useStore();
 
   const {
     attributes,
@@ -58,6 +58,11 @@ function DraggableProject({ project }: { project: Project }) {
     if (confirm(`Delete "${project.name}" and unassign all its tasks?`)) {
       deleteProject(project.id);
     }
+  };
+
+  const handleComplete = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    completeProject(project.id);
   };
 
   if (isEditing) {
@@ -104,7 +109,8 @@ function DraggableProject({ project }: { project: Project }) {
         {project.name}
       </span>
       <span className="pv-task-count">{taskCount}</span>
-      <button className="pv-delete" onClick={handleDelete}>×</button>
+      <button className="pv-complete" onClick={handleComplete} title="Mark complete">✓</button>
+      <button className="pv-delete" onClick={handleDelete} title="Delete">×</button>
     </div>
   );
 }
@@ -251,9 +257,10 @@ export function ProjectsView() {
     })
   );
 
-  // Sort areas and projects by order
+  // Sort areas and projects by order, filtering out completed projects
   const sortedAreas = [...areas].sort((a, b) => a.order - b.order);
-  const sortedProjects = [...projects].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  const activeProjects = projects.filter((p) => !p.completed);
+  const sortedProjects = [...activeProjects].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
   // Group projects by area
   const projectsByArea: Record<string, Project[]> = { 'no-area': [] };

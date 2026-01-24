@@ -66,6 +66,7 @@ interface TaskbedState {
   addProject: (name: string, areaId?: string) => void;
   updateProject: (id: string, updates: Partial<Project>) => void;
   deleteProject: (id: string) => void;
+  completeProject: (id: string) => void;
   reorderProjects: (projectIds: string[]) => void;
   moveProjectToArea: (projectId: string, areaId: string | undefined) => void;
 
@@ -283,6 +284,13 @@ export const useStore = create<TaskbedState>()(
           projects: state.projects.filter((p) => p.id !== id),
           tasks: state.tasks.map((t) =>
             t.projectId === id ? { ...t, projectId: undefined } : t
+          ),
+        })),
+
+      completeProject: (id) =>
+        set((state) => ({
+          projects: state.projects.map((p) =>
+            p.id === id ? { ...p, completed: true, completedAt: Date.now() } : p
           ),
         })),
 

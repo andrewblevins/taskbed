@@ -33,6 +33,8 @@ export interface Project {
   areaId?: string; // optional - projects can be in an area or standalone
   order: number;
   createdAt: number;
+  completed?: boolean;
+  completedAt?: number;
 }
 
 export interface AttributeDefinition {
