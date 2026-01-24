@@ -34,13 +34,45 @@ Opens at http://localhost:5173
 
 Tasks are stored in `data/taskbed.json`. The app also persists to localStorage for fast startup.
 
-## AI Integration
+## AI Integration (MCP Server)
 
-There's a companion MCP server that lets Claude Desktop and Claude Code manage tasks via natural language:
+Taskbed includes an MCP server that lets Claude Desktop and Claude Code manage tasks via natural language.
 
-- [taskbed-mcp](https://github.com/andrewblevins/taskbed-mcp)
+### Setup
 
-Example: "Add a task to call the dentist, tag it @phone, due Tuesday"
+Build the MCP server:
+```bash
+cd mcp-server
+npm install
+npm run build
+```
+
+Add to Claude Desktop (`~/Library/Application Support/Claude/claude_desktop_config.json`):
+```json
+{
+  "mcpServers": {
+    "taskbed": {
+      "command": "node",
+      "args": ["/path/to/taskbed/mcp-server/dist/index.js"]
+    }
+  }
+}
+```
+
+Or add to Claude Code:
+```bash
+claude mcp add taskbed node /path/to/taskbed/mcp-server/dist/index.js
+```
+
+### Usage Examples
+
+- "Add a task to call the dentist, tag it @phone, due Tuesday"
+- "Show me my inbox"
+- "What's overdue?"
+- "Move that task to waiting for John"
+- "Show next actions for @computer context"
+
+See `mcp-server/README.md` for full tool documentation.
 
 ## Tech Stack
 
