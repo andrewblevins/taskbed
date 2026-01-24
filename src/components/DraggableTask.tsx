@@ -6,9 +6,10 @@ import type { Task } from '../types';
 interface DraggableTaskProps {
   task: Task;
   onSelect: (task: Task) => void;
+  isFocused?: boolean;
 }
 
-export function DraggableTask({ task, onSelect }: DraggableTaskProps) {
+export function DraggableTask({ task, onSelect, isFocused }: DraggableTaskProps) {
   const {
     attributes,
     listeners,
@@ -24,8 +25,13 @@ export function DraggableTask({ task, onSelect }: DraggableTaskProps) {
     opacity: isDragging ? 0.5 : 1,
   };
 
+  const className = [
+    isDragging ? 'dragging' : '',
+    isFocused ? 'keyboard-focused' : '',
+  ].filter(Boolean).join(' ') || undefined;
+
   return (
-    <div ref={setNodeRef} style={style} className={isDragging ? 'dragging' : ''}>
+    <div ref={setNodeRef} style={style} className={className}>
       <div className="task-item-wrapper">
         <button className="drag-handle" {...attributes} {...listeners}>
           <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
@@ -37,7 +43,7 @@ export function DraggableTask({ task, onSelect }: DraggableTaskProps) {
             <circle cx="9" cy="10" r="1.5" />
           </svg>
         </button>
-        <TaskItem task={task} onSelect={onSelect} />
+        <TaskItem task={task} onSelect={onSelect} isFocused={isFocused} />
       </div>
     </div>
   );

@@ -35,7 +35,9 @@ interface TaskbedState {
   projects: Project[];
   areas: Area[];
   attributes: AttributeDefinition[];
+  availableTags: string[]; // GTD contexts like @phone, @errands, @computer
   currentGrouping: ViewGrouping;
+  selectedTagFilter: string | null; // filter tasks by tag
 
   // Review state
   reviewInProgress: boolean;
@@ -82,6 +84,16 @@ interface TaskbedState {
   // View actions
   setGrouping: (grouping: ViewGrouping) => void;
 
+  // Tag actions
+  addTag: (tag: string) => void;
+  removeTag: (tag: string) => void;
+  addTagToTask: (taskId: string, tag: string) => void;
+  removeTagFromTask: (taskId: string, tag: string) => void;
+  setTagFilter: (tag: string | null) => void;
+
+  // Due date actions
+  setDueDate: (taskId: string, dueDate: number | undefined) => void;
+
   // Sync action
   syncFromFile: () => Promise<void>;
 }
@@ -103,7 +115,9 @@ export const useStore = create<TaskbedState>()(
           ],
         },
       ],
+      availableTags: ['@phone', '@computer', '@errands', '@home', '@office', '@anywhere'],
       currentGrouping: { attributeId: 'energy' },
+      selectedTagFilter: null,
 
       // Review state
       reviewInProgress: false,
@@ -125,6 +139,7 @@ export const useStore = create<TaskbedState>()(
               status,
               projectId,
               attributes: {},
+              tags: [],
               createdAt: Date.now(),
             },
           ],
@@ -357,6 +372,54 @@ export const useStore = create<TaskbedState>()(
         })),
 
       setGrouping: (grouping) => set({ currentGrouping: grouping }),
+
+      addTag: (tag) =>
+        set((state) => ({
+          availableTags: state.availableTags.includes(tag)
+            ? state.availableTags
+            : [...state.availableTags, tag],
+        })),
+
+      removeTag: (tag) =>
+        set((state) => ({
+          availableTags: state.availableTags.filter((t) => t !== tag),
+          tasks: state.tasks.map((task) => ({
+            ...task,
+            tags: (task.tags || []).filter((t) => t !== tag),
+          })),
+          selectedTagFilter: state.selectedTagFilter === tag ? null : state.selectedTagFilter,
+        })),
+
+      addTagToTask: (taskId, tag) =>
+        set((state) => ({
+          tasks: state.tasks.map((task) =>
+            task.id === taskId
+              ? { ...task, tags: (task.tags || []).includes(tag) ? task.tags : [...(task.tags || []), tag] }
+              : task
+          ),
+          // Auto-add tag to available tags if new
+          availableTags: state.availableTags.includes(tag)
+            ? state.availableTags
+            : [...state.availableTags, tag],
+        })),
+
+      removeTagFromTask: (taskId, tag) =>
+        set((state) => ({
+          tasks: state.tasks.map((task) =>
+            task.id === taskId
+              ? { ...task, tags: (task.tags || []).filter((t) => t !== tag) }
+              : task
+          ),
+        })),
+
+      setTagFilter: (tag) => set({ selectedTagFilter: tag }),
+
+      setDueDate: (taskId, dueDate) =>
+        set((state) => ({
+          tasks: state.tasks.map((task) =>
+            task.id === taskId ? { ...task, dueDate } : task
+          ),
+        })),
 
       syncFromFile: async () => {
         try {

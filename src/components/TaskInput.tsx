@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, forwardRef } from 'react';
 import { useStore } from '../store';
 
-export function TaskInput() {
+export const TaskInput = forwardRef<HTMLInputElement>(function TaskInput(_props, ref) {
   const [title, setTitle] = useState('');
   const addTask = useStore((s) => s.addTask);
 
@@ -16,6 +16,7 @@ export function TaskInput() {
   return (
     <form onSubmit={handleSubmit} className="task-input">
       <input
+        ref={ref}
         type="text"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
@@ -24,4 +25,4 @@ export function TaskInput() {
       />
     </form>
   );
-}
+});

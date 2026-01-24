@@ -8,12 +8,15 @@ export interface Task {
   status: TaskStatus; // active = do now, someday = maybe later, waiting = blocked on someone
   projectId?: string;
   attributes: Record<string, string>; // flexible attributes like { energy: "high", context: "home" }
+  tags: string[]; // GTD contexts like @phone, @errands, @computer
   createdAt: number;
   completedAt?: number;
   order?: number; // for sorting within groups
   // Waiting-specific fields
   waitingFor?: string; // who you're waiting on (person/entity name)
   waitingSince?: number; // when it was moved to waiting
+  // Due date (optional - GTD says only use for hard deadlines)
+  dueDate?: number; // timestamp of the due date
 }
 
 export interface Area {

@@ -22,9 +22,10 @@ import type { Task } from '../types';
 
 interface GroupedTaskListProps {
   onSelectTask: (task: Task) => void;
+  focusedTaskId?: string;
 }
 
-export function GroupedTaskList({ onSelectTask }: GroupedTaskListProps) {
+export function GroupedTaskList({ onSelectTask, focusedTaskId }: GroupedTaskListProps) {
   const {
     tasks,
     attributes,
@@ -33,6 +34,7 @@ export function GroupedTaskList({ onSelectTask }: GroupedTaskListProps) {
     reorderTasks,
     moveTaskToAttributeGroup,
     moveTaskToProject,
+    selectedTagFilter,
   } = useStore();
 
   const [activeTask, setActiveTask] = useState<Task | null>(null);
@@ -49,7 +51,12 @@ export function GroupedTaskList({ onSelectTask }: GroupedTaskListProps) {
   );
 
   // Only show active tasks (not completed, not someday, not waiting)
-  const incompleteTasks = tasks.filter((t) => !t.completed && (t.status === 'active' || !t.status));
+  // Also filter by tag if a tag filter is selected
+  const incompleteTasks = tasks.filter((t) => {
+    if (t.completed || (t.status && t.status !== 'active')) return false;
+    if (selectedTagFilter && !(t.tags || []).includes(selectedTagFilter)) return false;
+    return true;
+  });
 
   const handleDragStart = (event: DragStartEvent) => {
     const task = tasks.find((t) => t.id === event.active.id);
@@ -199,7 +206,7 @@ export function GroupedTaskList({ onSelectTask }: GroupedTaskListProps) {
                     </h3>
                     <div className="group-tasks">
                       {groups[project.id].map((task) => (
-                        <DraggableTask key={task.id} task={task} onSelect={onSelectTask} />
+                        <DraggableTask key={task.id} task={task} onSelect={onSelectTask} isFocused={focusedTaskId === task.id} />
                       ))}
                     </div>
                   </div>
@@ -213,7 +220,7 @@ export function GroupedTaskList({ onSelectTask }: GroupedTaskListProps) {
                 </h3>
                 <div className="group-tasks">
                   {groups['unset'].map((task) => (
-                    <DraggableTask key={task.id} task={task} onSelect={onSelectTask} />
+                    <DraggableTask key={task.id} task={task} onSelect={onSelectTask} isFocused={focusedTaskId === task.id} />
                   ))}
                 </div>
               </div>
@@ -275,7 +282,7 @@ export function GroupedTaskList({ onSelectTask }: GroupedTaskListProps) {
                 </h3>
                 <div className="group-tasks">
                   {groups[opt.id].map((task) => (
-                    <DraggableTask key={task.id} task={task} onSelect={onSelectTask} />
+                    <DraggableTask key={task.id} task={task} onSelect={onSelectTask} isFocused={focusedTaskId === task.id} />
                   ))}
                 </div>
               </div>
@@ -288,7 +295,7 @@ export function GroupedTaskList({ onSelectTask }: GroupedTaskListProps) {
                 </h3>
                 <div className="group-tasks">
                   {groups['unset'].map((task) => (
-                    <DraggableTask key={task.id} task={task} onSelect={onSelectTask} />
+                    <DraggableTask key={task.id} task={task} onSelect={onSelectTask} isFocused={focusedTaskId === task.id} />
                   ))}
                 </div>
               </div>
@@ -319,7 +326,7 @@ export function GroupedTaskList({ onSelectTask }: GroupedTaskListProps) {
       <div className="task-list">
         <SortableContext items={allTaskIds} strategy={verticalListSortingStrategy}>
           {incompleteTasks.map((task) => (
-            <DraggableTask key={task.id} task={task} onSelect={onSelectTask} />
+            <DraggableTask key={task.id} task={task} onSelect={onSelectTask} isFocused={focusedTaskId === task.id} />
           ))}
         </SortableContext>
       </div>

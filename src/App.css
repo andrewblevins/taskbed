@@ -413,6 +413,64 @@ body {
   opacity: 0.6;
 }
 
+/* Task meta container */
+.task-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Inline tags in task list */
+.task-tags-inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.task-tag-inline {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--color-text-tertiary);
+  background: var(--color-bg);
+  padding: 0.125rem 0.375rem;
+  border-radius: var(--radius-sm);
+}
+
+/* Due date in task list */
+.task-due-date {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.task-due-date::before {
+  content: '';
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--color-text-tertiary);
+}
+
+.task-due-date.due-soon {
+  color: var(--color-medium);
+}
+
+.task-due-date.due-soon::before {
+  background: var(--color-medium);
+}
+
+.task-due-date.overdue {
+  color: var(--color-high);
+}
+
+.task-due-date.overdue::before {
+  background: var(--color-high);
+}
+
 /* Flat task list */
 .task-list {
   background: var(--color-surface);
@@ -571,6 +629,61 @@ body {
   outline: none;
   border-color: var(--color-accent);
   box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+}
+
+/* Due Date field */
+.due-date-section {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.due-date-input {
+  flex: 1;
+  padding: 0.625rem 1rem;
+  font-size: 0.9375rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-family: inherit;
+}
+
+.due-date-input:hover {
+  border-color: var(--color-text-tertiary);
+}
+
+.due-date-input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+}
+
+.due-date-clear {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: var(--color-bg);
+  color: var(--color-text-secondary);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.15s ease;
+}
+
+.due-date-clear:hover {
+  background: #fee2e2;
+  color: #ef4444;
+}
+
+.field-hint {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--color-text-tertiary);
+  margin-top: 0.25rem;
 }
 
 /* Attribute options as pill buttons */
@@ -2316,6 +2429,22 @@ textarea:focus:not(:focus-visible) {
   margin: 0.5rem 0;
 }
 
+/* Sidebar section label */
+.nav-section-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.5rem 0.75rem 0.25rem;
+}
+
+/* Tag filter nav items */
+.nav-tag {
+  font-size: 0.875rem;
+  padding: 0.5rem 0.75rem;
+}
+
 .nav-count {
   margin-left: auto;
   font-size: 0.75rem;
@@ -2707,4 +2836,343 @@ textarea:focus:not(:focus-visible) {
 .waiting-prompt-btn.cancel:hover {
   border-color: var(--color-text-tertiary);
   color: var(--color-text);
+}
+
+/* Search */
+.search-container {
+  position: relative;
+  margin-top: 1rem;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  color: var(--color-text);
+  outline: none;
+  transition: all 0.15s ease;
+}
+
+.search-input:hover {
+  border-color: var(--color-text-tertiary);
+}
+
+.search-input:focus {
+  border-color: var(--color-accent);
+  background: var(--color-surface);
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+}
+
+.search-input::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+.search-results {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  max-height: 320px;
+  overflow-y: auto;
+  z-index: 200;
+}
+
+.search-no-results {
+  padding: 1rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--color-text-tertiary);
+}
+
+.search-result-item {
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  transition: background-color 0.1s ease;
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.search-result-item:last-child {
+  border-bottom: none;
+}
+
+.search-result-item:hover {
+  background: var(--color-bg);
+}
+
+.search-result-title {
+  font-size: 0.875rem;
+  color: var(--color-text);
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.search-result-title mark {
+  background: rgba(0, 122, 255, 0.2);
+  color: inherit;
+  padding: 0 0.125rem;
+  border-radius: 2px;
+}
+
+.search-result-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+}
+
+.search-result-project {
+  color: var(--color-text-tertiary);
+}
+
+.search-result-project mark {
+  background: rgba(0, 122, 255, 0.15);
+  color: inherit;
+  padding: 0 0.125rem;
+  border-radius: 2px;
+}
+
+.search-result-status {
+  padding: 0.125rem 0.375rem;
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+}
+
+.search-result-status.status-active {
+  background: rgba(0, 122, 255, 0.1);
+  color: var(--color-accent);
+}
+
+.search-result-status.status-someday {
+  background: rgba(245, 158, 11, 0.1);
+  color: #f59e0b;
+}
+
+.search-result-status.status-waiting {
+  background: rgba(139, 92, 246, 0.1);
+  color: #8b5cf6;
+}
+
+.search-result-completed {
+  color: var(--color-low);
+  font-weight: 500;
+}
+
+/* Keyboard navigation focus */
+.task-item.focused {
+  background: var(--color-accent);
+  color: white;
+}
+
+.task-item.focused .task-title {
+  color: white;
+}
+
+.task-item.focused .task-project {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.task-item.focused .task-project::before {
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.task-item.focused .task-tag-inline {
+  background: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.task-item.focused .task-due-date {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.task-item.focused .task-due-date::before {
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.task-item.focused .task-checkbox {
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+.keyboard-focused .task-item-wrapper {
+  background: rgba(0, 122, 255, 0.05);
+  border-radius: var(--radius-md);
+}
+
+/* Search input keyboard hint */
+.search-input::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+.search-hint {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.6875rem;
+  color: var(--color-text-tertiary);
+  background: var(--color-bg);
+  padding: 0.125rem 0.375rem;
+  border-radius: var(--radius-sm);
+  pointer-events: none;
+}
+
+/* Tags (GTD Contexts) */
+.tags-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.task-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+
+.task-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background: var(--color-accent);
+  color: white;
+  border-radius: var(--radius-sm);
+}
+
+.tag-remove {
+  width: 16px;
+  height: 16px;
+  border: none;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border-radius: 50%;
+  font-size: 0.875rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: background-color 0.15s;
+}
+
+.tag-remove:hover {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.tag-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+
+.tag-option {
+  padding: 0.25rem 0.625rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.tag-option:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  background: rgba(0, 122, 255, 0.05);
+}
+
+.add-tag {
+  margin-top: 0.25rem;
+}
+
+.add-tag input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8125rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  outline: none;
+  color: var(--color-text);
+  transition: all 0.15s ease;
+}
+
+.add-tag input:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+}
+
+.add-tag input::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+/* Tags displayed in task list */
+.task-item-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin-top: 0.25rem;
+}
+
+.task-item-tag {
+  font-size: 0.625rem;
+  font-weight: 500;
+  padding: 0.125rem 0.375rem;
+  background: rgba(0, 122, 255, 0.1);
+  color: var(--color-accent);
+  border-radius: var(--radius-sm);
+}
+
+/* Tag filter in sidebar */
+.tag-filter {
+  padding: 0.5rem 0.75rem;
+  margin: 0 0.75rem 0.5rem;
+}
+
+.tag-filter-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.375rem;
+}
+
+.tag-filter-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.tag-filter-item {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.tag-filter-item:hover {
+  border-color: var(--color-text-tertiary);
+  color: var(--color-text);
+}
+
+.tag-filter-item.active {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: white;
 }

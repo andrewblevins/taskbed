@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { TaskInput } from './components/TaskInput';
 import { GroupedTaskList } from './components/GroupedTaskList';
 import { GroupingSelector } from './components/GroupingSelector';
@@ -7,10 +7,57 @@ import { ProjectsView } from './components/ProjectsView';
 import { AttributeManager } from './components/AttributeManager';
 import { WeeklyReview } from './components/WeeklyReview';
 import { useStore } from './store';
+import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import type { Task } from './types';
 import './App.css';
 
 type View = 'tasks' | 'projects' | 'someday' | 'waiting';
+
+// Search result item with highlighted matches
+function SearchResultItem({
+  task,
+  query,
+  projectName,
+  onSelect,
+}: {
+  task: Task;
+  query: string;
+  projectName?: string;
+  onSelect: () => void;
+}) {
+  const highlightMatch = (text: string) => {
+    if (!query.trim()) return text;
+    const parts = text.split(new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'));
+    return parts.map((part, i) =>
+      part.toLowerCase() === query.toLowerCase() ? (
+        <mark key={i}>{part}</mark>
+      ) : (
+        part
+      )
+    );
+  };
+
+  const statusLabel = {
+    active: 'Active',
+    someday: 'Someday',
+    waiting: 'Waiting',
+  };
+
+  return (
+    <div className="search-result-item" onClick={onSelect}>
+      <span className="search-result-title">{highlightMatch(task.title)}</span>
+      <div className="search-result-meta">
+        {projectName && (
+          <span className="search-result-project">{highlightMatch(projectName)}</span>
+        )}
+        <span className={`search-result-status status-${task.status || 'active'}`}>
+          {statusLabel[task.status || 'active']}
+        </span>
+        {task.completed && <span className="search-result-completed">Completed</span>}
+      </div>
+    </div>
+  );
+}
 
 // Count badges for sidebar
 function SomedayCount() {
@@ -176,6 +223,17 @@ function App() {
   const syncFromFile = useStore((s) => s.syncFromFile);
   const reviewInProgress = useStore((s) => s.reviewInProgress);
   const startReview = useStore((s) => s.startReview);
+  const availableTags = useStore((s) => s.availableTags);
+  const selectedTagFilter = useStore((s) => s.selectedTagFilter);
+  const setTagFilter = useStore((s) => s.setTagFilter);
+
+  // Search state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Task input ref for keyboard shortcuts
+  const taskInputRef = useRef<HTMLInputElement>(null);
 
   // Sync from file on mount (picks up changes made by AI/external tools)
   useEffect(() => {
@@ -183,7 +241,109 @@ function App() {
   }, [syncFromFile]);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const tasks = useStore((s) => s.tasks);
+  const projects = useStore((s) => s.projects);
   const selectedTask = tasks.find((t) => t.id === selectedTaskId);
+
+  // Get visible tasks for keyboard navigation (active tasks only, not completed)
+  const visibleTasks = useMemo(() => {
+    return tasks.filter((t) => !t.completed && (t.status === 'active' || !t.status));
+  }, [tasks]);
+
+  // Keyboard navigation index
+  const [focusedTaskIndex, setFocusedTaskIndex] = useState<number>(-1);
+
+  // Project map for search results
+  const projectMap = useMemo(() => new Map(projects.map((p) => [p.id, p])), [projects]);
+
+  // Search filtering
+  const searchResults = useMemo(() => {
+    if (!searchQuery.trim()) return [];
+
+    const query = searchQuery.toLowerCase();
+    return tasks.filter((task) => {
+      // Search in title
+      if (task.title.toLowerCase().includes(query)) return true;
+      // Search in notes
+      if (task.notes?.toLowerCase().includes(query)) return true;
+      // Search in project name
+      const project = task.projectId ? projectMap.get(task.projectId) : null;
+      if (project?.name.toLowerCase().includes(query)) return true;
+      // Search in waitingFor
+      if (task.waitingFor?.toLowerCase().includes(query)) return true;
+      return false;
+    });
+  }, [tasks, projectMap, searchQuery]);
+
+  // Show search results when there's a query and input is focused
+  const showSearchResults = isSearchFocused && searchQuery.trim().length > 0;
+
+  // Handle clicking a search result
+  const handleSearchResultSelect = (taskId: string) => {
+    setSelectedTaskId(taskId);
+    setSearchQuery('');
+    setIsSearchFocused(false);
+  };
+
+  // Close search on Escape
+  const handleSearchKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      setSearchQuery('');
+      setIsSearchFocused(false);
+      searchInputRef.current?.blur();
+    }
+  };
+
+  // Keyboard shortcut handlers
+  const handleNewTask = useCallback(() => {
+    if (currentView === 'tasks') {
+      taskInputRef.current?.focus();
+    }
+  }, [currentView]);
+
+  const handleNavigateUp = useCallback(() => {
+    if (currentView === 'tasks' && visibleTasks.length > 0) {
+      setFocusedTaskIndex((prev) => {
+        if (prev <= 0) return visibleTasks.length - 1;
+        return prev - 1;
+      });
+    }
+  }, [currentView, visibleTasks.length]);
+
+  const handleNavigateDown = useCallback(() => {
+    if (currentView === 'tasks' && visibleTasks.length > 0) {
+      setFocusedTaskIndex((prev) => {
+        if (prev < 0 || prev >= visibleTasks.length - 1) return 0;
+        return prev + 1;
+      });
+    }
+  }, [currentView, visibleTasks.length]);
+
+  const handleSelectTask = useCallback(() => {
+    if (focusedTaskIndex >= 0 && focusedTaskIndex < visibleTasks.length) {
+      setSelectedTaskId(visibleTasks[focusedTaskIndex].id);
+    }
+  }, [focusedTaskIndex, visibleTasks]);
+
+  const handleEscape = useCallback(() => {
+    if (selectedTaskId) {
+      setSelectedTaskId(null);
+    } else {
+      setFocusedTaskIndex(-1);
+    }
+  }, [selectedTaskId]);
+
+  // Set up keyboard shortcuts
+  useKeyboardShortcuts(
+    {
+      onNewTask: handleNewTask,
+      onNavigateUp: handleNavigateUp,
+      onNavigateDown: handleNavigateDown,
+      onSelectTask: handleSelectTask,
+      onEscape: handleEscape,
+      enabled: !reviewInProgress,
+    },
+    searchInputRef
+  );
 
   // Full-screen review mode
   if (reviewInProgress) {
@@ -196,6 +356,36 @@ function App() {
       <nav className="sidebar">
         <div className="sidebar-header">
           <h1>Taskbed</h1>
+          <div className="search-container">
+            <input
+              ref={searchInputRef}
+              type="text"
+              className="search-input"
+              placeholder="Search tasks..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onFocus={() => setIsSearchFocused(true)}
+              onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)}
+              onKeyDown={handleSearchKeyDown}
+            />
+            {showSearchResults && (
+              <div className="search-results">
+                {searchResults.length === 0 ? (
+                  <div className="search-no-results">No tasks found</div>
+                ) : (
+                  searchResults.slice(0, 10).map((task) => (
+                    <SearchResultItem
+                      key={task.id}
+                      task={task}
+                      query={searchQuery}
+                      projectName={task.projectId ? projectMap.get(task.projectId)?.name : undefined}
+                      onSelect={() => handleSearchResultSelect(task.id)}
+                    />
+                  ))
+                )}
+              </div>
+            )}
+          </div>
         </div>
         <div className="sidebar-nav">
           <button
@@ -254,6 +444,29 @@ function App() {
             </svg>
             Weekly Review
           </button>
+
+          {/* GTD Context Tags Filter */}
+          {availableTags.length > 0 && (
+            <>
+              <div className="nav-divider" />
+              <div className="nav-section-label">Contexts</div>
+              <button
+                className={`nav-item nav-tag ${selectedTagFilter === null ? 'active' : ''}`}
+                onClick={() => setTagFilter(null)}
+              >
+                All Contexts
+              </button>
+              {availableTags.map((tag) => (
+                <button
+                  key={tag}
+                  className={`nav-item nav-tag ${selectedTagFilter === tag ? 'active' : ''}`}
+                  onClick={() => setTagFilter(tag)}
+                >
+                  {tag}
+                </button>
+              ))}
+            </>
+          )}
         </div>
         <div className="sidebar-footer">
           <AttributeManager />
@@ -269,8 +482,11 @@ function App() {
               <GroupingSelector />
             </header>
             <main className="content-body">
-              <TaskInput />
-              <GroupedTaskList onSelectTask={(task: Task) => setSelectedTaskId(task.id)} />
+              <TaskInput ref={taskInputRef} />
+              <GroupedTaskList
+                onSelectTask={(task: Task) => setSelectedTaskId(task.id)}
+                focusedTaskId={focusedTaskIndex >= 0 ? visibleTasks[focusedTaskIndex]?.id : undefined}
+              />
             </main>
           </>
         )}

@@ -8,11 +8,27 @@ interface TaskDetailProps {
 }
 
 export function TaskDetail({ task, onClose }: TaskDetailProps) {
-  const { updateTask, deleteTask, projects, attributes, setTaskStatus, moveToWaiting, activateTask } = useStore();
+  const {
+    updateTask,
+    deleteTask,
+    projects,
+    attributes,
+    setTaskStatus,
+    moveToWaiting,
+    activateTask,
+    availableTags,
+    addTagToTask,
+    removeTagFromTask,
+    addTag,
+    setDueDate,
+  } = useStore();
   const [title, setTitle] = useState(task.title);
   const [notes, setNotes] = useState(task.notes || '');
   const [showWaitingPrompt, setShowWaitingPrompt] = useState(false);
   const [waitingFor, setWaitingFor] = useState('');
+  const [newTag, setNewTag] = useState('');
+
+  const taskTags = task.tags || [];
 
   useEffect(() => {
     setTitle(task.title);
@@ -115,6 +131,38 @@ export function TaskDetail({ task, onClose }: TaskDetailProps) {
             </select>
           </div>
 
+          {/* Due Date - optional, GTD says only use for hard deadlines */}
+          <div className="task-detail-field">
+            <label>Due Date</label>
+            <div className="due-date-section">
+              <input
+                type="date"
+                className="due-date-input"
+                value={task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : ''}
+                onChange={(e) => {
+                  if (e.target.value) {
+                    // Parse the date and set to end of day in local timezone
+                    const [year, month, day] = e.target.value.split('-').map(Number);
+                    const date = new Date(year, month - 1, day, 23, 59, 59);
+                    setDueDate(task.id, date.getTime());
+                  } else {
+                    setDueDate(task.id, undefined);
+                  }
+                }}
+              />
+              {task.dueDate && (
+                <button
+                  className="due-date-clear"
+                  onClick={() => setDueDate(task.id, undefined)}
+                  title="Clear due date"
+                >
+                  ×
+                </button>
+              )}
+            </div>
+            <span className="field-hint">Only set for hard deadlines (GTD principle)</span>
+          </div>
+
           {attributes.map((attr) => (
             <div key={attr.id} className="task-detail-field">
               <label>{attr.name}</label>
@@ -140,6 +188,55 @@ export function TaskDetail({ task, onClose }: TaskDetailProps) {
               </div>
             </div>
           ))}
+
+          {/* Tags (GTD Contexts) */}
+          <div className="task-detail-field">
+            <label>Context Tags</label>
+            <div className="tags-section">
+              <div className="task-tags">
+                {taskTags.map((tag) => (
+                  <span key={tag} className="task-tag">
+                    {tag}
+                    <button
+                      className="tag-remove"
+                      onClick={() => removeTagFromTask(task.id, tag)}
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+              </div>
+              <div className="tag-picker">
+                {availableTags
+                  .filter((tag) => !taskTags.includes(tag))
+                  .map((tag) => (
+                    <button
+                      key={tag}
+                      className="tag-option"
+                      onClick={() => addTagToTask(task.id, tag)}
+                    >
+                      {tag}
+                    </button>
+                  ))}
+              </div>
+              <div className="add-tag">
+                <input
+                  type="text"
+                  value={newTag}
+                  onChange={(e) => setNewTag(e.target.value)}
+                  placeholder="Add new tag (e.g., @calls)"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && newTag.trim()) {
+                      const tag = newTag.trim().startsWith('@') ? newTag.trim() : `@${newTag.trim()}`;
+                      addTag(tag);
+                      addTagToTask(task.id, tag);
+                      setNewTag('');
+                    }
+                  }}
+                />
+              </div>
+            </div>
+          </div>
 
           {/* Status Section */}
           <div className="task-detail-field">
