@@ -8,9 +8,11 @@ interface TaskDetailProps {
 }
 
 export function TaskDetail({ task, onClose }: TaskDetailProps) {
-  const { updateTask, deleteTask, projects, attributes } = useStore();
+  const { updateTask, deleteTask, projects, attributes, setTaskStatus, moveToWaiting, activateTask } = useStore();
   const [title, setTitle] = useState(task.title);
   const [notes, setNotes] = useState(task.notes || '');
+  const [showWaitingPrompt, setShowWaitingPrompt] = useState(false);
+  const [waitingFor, setWaitingFor] = useState('');
 
   useEffect(() => {
     setTitle(task.title);
@@ -47,6 +49,26 @@ export function TaskDetail({ task, onClose }: TaskDetailProps) {
     deleteTask(task.id);
     onClose();
   };
+
+  const handleDeferToSomeday = () => {
+    setTaskStatus(task.id, 'someday');
+    onClose();
+  };
+
+  const handleMoveToWaiting = () => {
+    if (waitingFor.trim()) {
+      moveToWaiting(task.id, waitingFor.trim());
+      setShowWaitingPrompt(false);
+      setWaitingFor('');
+      onClose();
+    }
+  };
+
+  const handleActivate = () => {
+    activateTask(task.id);
+  };
+
+  const currentStatus = task.status || 'active';
 
   return (
     <div className="task-detail-overlay" onClick={onClose}>
@@ -118,6 +140,78 @@ export function TaskDetail({ task, onClose }: TaskDetailProps) {
               </div>
             </div>
           ))}
+
+          {/* Status Section */}
+          <div className="task-detail-field">
+            <label>Status</label>
+            <div className="task-status-section">
+              <span className={`status-badge status-${currentStatus}`}>
+                {currentStatus === 'active' && 'Active'}
+                {currentStatus === 'someday' && 'Someday / Maybe'}
+                {currentStatus === 'waiting' && `Waiting for ${task.waitingFor || 'someone'}`}
+              </span>
+
+              {currentStatus !== 'active' && (
+                <button className="status-action-inline activate" onClick={handleActivate}>
+                  Move to Active
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Status Actions */}
+          {currentStatus === 'active' && (
+            <div className="task-detail-field">
+              <label>Quick Actions</label>
+              <div className="task-status-actions">
+                <button className="status-action-btn-large someday" onClick={handleDeferToSomeday}>
+                  Defer to Someday
+                </button>
+                <button
+                  className="status-action-btn-large waiting"
+                  onClick={() => setShowWaitingPrompt(true)}
+                >
+                  Move to Waiting For
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Waiting Prompt */}
+          {showWaitingPrompt && (
+            <div className="waiting-prompt">
+              <label>Who are you waiting for?</label>
+              <div className="waiting-prompt-input">
+                <input
+                  type="text"
+                  value={waitingFor}
+                  onChange={(e) => setWaitingFor(e.target.value)}
+                  placeholder="e.g., John, Client, Vendor"
+                  autoFocus
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleMoveToWaiting();
+                    if (e.key === 'Escape') setShowWaitingPrompt(false);
+                  }}
+                />
+                <button
+                  className="waiting-prompt-btn confirm"
+                  onClick={handleMoveToWaiting}
+                  disabled={!waitingFor.trim()}
+                >
+                  Confirm
+                </button>
+                <button
+                  className="waiting-prompt-btn cancel"
+                  onClick={() => {
+                    setShowWaitingPrompt(false);
+                    setWaitingFor('');
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="task-detail-footer">

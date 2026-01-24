@@ -10,10 +10,11 @@ import {
   useSensors,
   type DragEndEvent,
   type DragStartEvent,
+  type DragOverEvent,
 } from '@dnd-kit/core';
 import type { Task } from '../types';
 
-const TOTAL_STEPS = 6;
+const TOTAL_STEPS = 8;
 
 export function WeeklyReview() {
   const reviewStep = useStore((s) => s.reviewStep);
@@ -25,8 +26,10 @@ export function WeeklyReview() {
     'Brain Dump',
     'Celebrate Completions',
     'Review Active Tasks',
+    'Review Waiting For',
     'Review Projects',
     'Loose Ends',
+    'Review Someday',
     'Review Complete',
   ];
 
@@ -53,9 +56,11 @@ export function WeeklyReview() {
         {reviewStep === 0 && <BrainDump onNext={nextReviewStep} />}
         {reviewStep === 1 && <CelebrateCompletions onNext={nextReviewStep} onPrev={prevReviewStep} />}
         {reviewStep === 2 && <ReviewActiveTasks onNext={nextReviewStep} onPrev={prevReviewStep} />}
-        {reviewStep === 3 && <ReviewProjects onNext={nextReviewStep} onPrev={prevReviewStep} />}
-        {reviewStep === 4 && <LooseEnds onNext={nextReviewStep} onPrev={prevReviewStep} />}
-        {reviewStep === 5 && <ReviewComplete onFinish={exitReview} onPrev={prevReviewStep} />}
+        {reviewStep === 3 && <ReviewWaitingFor onNext={nextReviewStep} onPrev={prevReviewStep} />}
+        {reviewStep === 4 && <ReviewProjects onNext={nextReviewStep} onPrev={prevReviewStep} />}
+        {reviewStep === 5 && <LooseEnds onNext={nextReviewStep} onPrev={prevReviewStep} />}
+        {reviewStep === 6 && <ReviewSomeday onNext={nextReviewStep} onPrev={prevReviewStep} />}
+        {reviewStep === 7 && <ReviewComplete onFinish={exitReview} onPrev={prevReviewStep} />}
       </main>
     </div>
   );
@@ -453,7 +458,7 @@ function LooseEnds({ onNext, onPrev }: { onNext: () => void; onPrev: () => void 
     setActiveId(event.active.id as string);
   };
 
-  const handleDragOver = (event: { over: { id: string } | null }) => {
+  const handleDragOver = (event: DragOverEvent) => {
     setOverProjectId(event.over?.id as string | null);
   };
 
@@ -545,7 +550,186 @@ function LooseEnds({ onNext, onPrev }: { onNext: () => void; onPrev: () => void 
   );
 }
 
-// Step 6: Complete
+// Helper to format waiting duration
+function formatWaitingDuration(since: number): string {
+  const days = Math.floor((Date.now() - since) / (1000 * 60 * 60 * 24));
+  if (days === 0) return 'today';
+  if (days === 1) return '1 day';
+  return `${days} days`;
+}
+
+// Step 4: Review Waiting For
+function ReviewWaitingFor({ onNext, onPrev }: { onNext: () => void; onPrev: () => void }) {
+  const tasks = useStore((s) => s.tasks);
+  const toggleTask = useStore((s) => s.toggleTask);
+  const activateTask = useStore((s) => s.activateTask);
+  const deleteTask = useStore((s) => s.deleteTask);
+  const [completedCount, setCompletedCount] = useState(0);
+  const [followedUpCount, setFollowedUpCount] = useState(0);
+
+  const waitingTasks = tasks.filter((t) => !t.completed && t.status === 'waiting');
+
+  // Sort by waiting duration (oldest first - needs attention)
+  const sortedTasks = [...waitingTasks].sort((a, b) =>
+    (a.waitingSince || 0) - (b.waitingSince || 0)
+  );
+
+  const handleComplete = (taskId: string) => {
+    toggleTask(taskId);
+    setCompletedCount((c) => c + 1);
+  };
+
+  const handleFollowUp = (taskId: string) => {
+    activateTask(taskId);
+    setFollowedUpCount((c) => c + 1);
+  };
+
+  return (
+    <div className="review-step">
+      <h2>Review Waiting For</h2>
+      <p className="review-prompt">
+        Check on items you're waiting for from others. Did you receive a response? Need to follow up?
+      </p>
+
+      {sortedTasks.length === 0 ? (
+        <p className="review-empty">No pending items from others.</p>
+      ) : (
+        <div className="review-scan-list">
+          {sortedTasks.map((task) => {
+            const waitingDays = task.waitingSince
+              ? Math.floor((Date.now() - task.waitingSince) / (1000 * 60 * 60 * 24))
+              : 0;
+            const isOverdue = waitingDays > 7;
+
+            return (
+              <div key={task.id} className="waiting-review-item">
+                <div className="waiting-review-header">
+                  <span className="waiting-for-badge">
+                    Waiting for <strong>{task.waitingFor || 'someone'}</strong>
+                  </span>
+                  <span className={`waiting-age ${isOverdue ? 'overdue' : ''}`}>
+                    {task.waitingSince ? formatWaitingDuration(task.waitingSince) : ''}
+                  </span>
+                </div>
+                <div className="waiting-review-content">
+                  <span className="waiting-review-title">{task.title}</span>
+                  <div className="waiting-review-actions">
+                    <button
+                      className="review-scan-btn complete"
+                      onClick={() => handleComplete(task.id)}
+                      title="Received / Done"
+                    >
+                      Done
+                    </button>
+                    <button
+                      className="review-scan-btn followup"
+                      onClick={() => handleFollowUp(task.id)}
+                      title="Need to follow up"
+                    >
+                      Follow up
+                    </button>
+                    <button
+                      className="review-scan-btn danger"
+                      onClick={() => deleteTask(task.id)}
+                      title="No longer needed"
+                    >
+                      ×
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      <div className="review-actions">
+        <button className="review-btn secondary" onClick={onPrev}>
+          ← Back
+        </button>
+        <span className="review-count">
+          {waitingTasks.length} waiting · {completedCount} received · {followedUpCount} follow up
+        </span>
+        <button className="review-btn primary" onClick={onNext}>
+          Next →
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// Step 7: Review Someday
+function ReviewSomeday({ onNext, onPrev }: { onNext: () => void; onPrev: () => void }) {
+  const tasks = useStore((s) => s.tasks);
+  const activateTask = useStore((s) => s.activateTask);
+  const deleteTask = useStore((s) => s.deleteTask);
+  const [activatedCount, setActivatedCount] = useState(0);
+  const [deletedCount, setDeletedCount] = useState(0);
+
+  const somedayTasks = tasks.filter((t) => !t.completed && t.status === 'someday');
+
+  const handleActivate = (taskId: string) => {
+    activateTask(taskId);
+    setActivatedCount((c) => c + 1);
+  };
+
+  const handleDelete = (taskId: string) => {
+    deleteTask(taskId);
+    setDeletedCount((c) => c + 1);
+  };
+
+  return (
+    <div className="review-step">
+      <h2>Review Someday / Maybe</h2>
+      <p className="review-prompt">
+        Scan your someday list. Is there anything you're now ready to commit to?
+        Delete items that no longer resonate.
+      </p>
+
+      {somedayTasks.length === 0 ? (
+        <p className="review-empty">No someday items to review.</p>
+      ) : (
+        <div className="review-scan-list">
+          {somedayTasks.map((task) => (
+            <div key={task.id} className="review-scan-task someday-task">
+              <span className="review-scan-task-title">{task.title}</span>
+              <div className="review-scan-task-actions">
+                <button
+                  className="review-scan-btn activate"
+                  onClick={() => handleActivate(task.id)}
+                  title="Move to active"
+                >
+                  Activate
+                </button>
+                <button
+                  className="review-scan-btn danger"
+                  onClick={() => handleDelete(task.id)}
+                  title="Delete"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="review-actions">
+        <button className="review-btn secondary" onClick={onPrev}>
+          ← Back
+        </button>
+        <span className="review-count">
+          {somedayTasks.length} someday · {activatedCount} activated · {deletedCount} deleted
+        </span>
+        <button className="review-btn primary" onClick={onNext}>
+          Next →
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// Step 8: Complete
 function ReviewComplete({ onFinish, onPrev }: { onFinish: () => void; onPrev: () => void }) {
   const tasks = useStore((s) => s.tasks);
   const projects = useStore((s) => s.projects);

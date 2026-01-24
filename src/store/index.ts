@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { v4 as uuid } from 'uuid';
-import type { Task, Project, Area, AttributeDefinition, ViewGrouping } from '../types';
+import type { Task, Project, Area, AttributeDefinition, ViewGrouping, TaskStatus } from '../types';
 
 const API_URL = 'http://localhost:3847/api/data';
 
@@ -48,13 +48,17 @@ interface TaskbedState {
   exitReview: () => void;
 
   // Task actions
-  addTask: (title: string, projectId?: string) => void;
+  addTask: (title: string, projectId?: string, status?: TaskStatus) => void;
   updateTask: (id: string, updates: Partial<Task>) => void;
   deleteTask: (id: string) => void;
   toggleTask: (id: string) => void;
   reorderTasks: (taskIds: string[]) => void;
   moveTaskToAttributeGroup: (taskId: string, attributeId: string, value: string, newIndex: number) => void;
   moveTaskToProject: (taskId: string, projectId: string | undefined, newIndex: number) => void;
+  // Status actions
+  setTaskStatus: (id: string, status: TaskStatus) => void;
+  moveToWaiting: (id: string, waitingFor: string) => void;
+  activateTask: (id: string) => void;
 
   // Project actions
   addProject: (name: string, areaId?: string) => void;
@@ -110,7 +114,7 @@ export const useStore = create<TaskbedState>()(
       prevReviewStep: () => set((state) => ({ reviewStep: Math.max(0, state.reviewStep - 1) })),
       exitReview: () => set({ reviewInProgress: false, reviewStep: 0 }),
 
-      addTask: (title, projectId) =>
+      addTask: (title, projectId, status = 'active') =>
         set((state) => ({
           tasks: [
             ...state.tasks,
@@ -118,6 +122,7 @@ export const useStore = create<TaskbedState>()(
               id: uuid(),
               title,
               completed: false,
+              status,
               projectId,
               attributes: {},
               createdAt: Date.now(),
@@ -196,6 +201,49 @@ export const useStore = create<TaskbedState>()(
 
           return { tasks: newTasks };
         }),
+
+      setTaskStatus: (id, status) =>
+        set((state) => ({
+          tasks: state.tasks.map((t) =>
+            t.id === id
+              ? {
+                  ...t,
+                  status,
+                  // Clear waiting fields if not waiting
+                  waitingFor: status === 'waiting' ? t.waitingFor : undefined,
+                  waitingSince: status === 'waiting' ? t.waitingSince : undefined,
+                }
+              : t
+          ),
+        })),
+
+      moveToWaiting: (id, waitingFor) =>
+        set((state) => ({
+          tasks: state.tasks.map((t) =>
+            t.id === id
+              ? {
+                  ...t,
+                  status: 'waiting' as const,
+                  waitingFor,
+                  waitingSince: Date.now(),
+                }
+              : t
+          ),
+        })),
+
+      activateTask: (id) =>
+        set((state) => ({
+          tasks: state.tasks.map((t) =>
+            t.id === id
+              ? {
+                  ...t,
+                  status: 'active' as const,
+                  waitingFor: undefined,
+                  waitingSince: undefined,
+                }
+              : t
+          ),
+        })),
 
       addProject: (name, areaId) =>
         set((state) => {

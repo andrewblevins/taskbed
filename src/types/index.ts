@@ -1,13 +1,19 @@
+export type TaskStatus = 'active' | 'someday' | 'waiting';
+
 export interface Task {
   id: string;
   title: string;
   notes?: string;
   completed: boolean;
+  status: TaskStatus; // active = do now, someday = maybe later, waiting = blocked on someone
   projectId?: string;
   attributes: Record<string, string>; // flexible attributes like { energy: "high", context: "home" }
   createdAt: number;
   completedAt?: number;
   order?: number; // for sorting within groups
+  // Waiting-specific fields
+  waitingFor?: string; // who you're waiting on (person/entity name)
+  waitingSince?: number; // when it was moved to waiting
 }
 
 export interface Area {

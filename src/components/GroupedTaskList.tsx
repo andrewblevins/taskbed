@@ -48,7 +48,8 @@ export function GroupedTaskList({ onSelectTask }: GroupedTaskListProps) {
     })
   );
 
-  const incompleteTasks = tasks.filter((t) => !t.completed);
+  // Only show active tasks (not completed, not someday, not waiting)
+  const incompleteTasks = tasks.filter((t) => !t.completed && (t.status === 'active' || !t.status));
 
   const handleDragStart = (event: DragStartEvent) => {
     const task = tasks.find((t) => t.id === event.active.id);
