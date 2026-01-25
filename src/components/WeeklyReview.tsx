@@ -116,7 +116,7 @@ function BrainDump({ onNext }: { onNext: () => void }) {
 // Step 2: Celebrate Completions
 function CelebrateCompletions({ onNext, onPrev }: { onNext: () => void; onPrev: () => void }) {
   const tasks = useStore((s) => s.tasks);
-  const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  const [sevenDaysAgo] = useState(() => Date.now() - 7 * 24 * 60 * 60 * 1000);
   const completedTasks = tasks.filter(
     (t) => t.completed && t.completedAt && t.completedAt > sevenDaysAgo
   );
@@ -599,6 +599,9 @@ function ReviewWaitingFor({ onNext, onPrev }: { onNext: () => void; onPrev: () =
   const [completedCount, setCompletedCount] = useState(0);
   const [followedUpCount, setFollowedUpCount] = useState(0);
 
+  // Capture current time once on mount for consistent rendering
+  const [now] = useState(() => Date.now());
+
   const waitingTasks = tasks.filter((t) => !t.completed && t.status === 'waiting');
 
   // Sort by waiting duration (oldest first - needs attention)
@@ -629,7 +632,7 @@ function ReviewWaitingFor({ onNext, onPrev }: { onNext: () => void; onPrev: () =
         <div className="review-scan-list">
           {sortedTasks.map((task) => {
             const waitingDays = task.waitingSince
-              ? Math.floor((Date.now() - task.waitingSince) / (1000 * 60 * 60 * 24))
+              ? Math.floor((now - task.waitingSince) / (1000 * 60 * 60 * 24))
               : 0;
             const isOverdue = waitingDays > 7;
 
@@ -767,7 +770,7 @@ function ReviewComplete({ onFinish, onPrev }: { onFinish: () => void; onPrev: ()
   const projects = useStore((s) => s.projects);
 
   const activeTasks = tasks.filter((t) => !t.completed).length;
-  const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  const [sevenDaysAgo] = useState(() => Date.now() - 7 * 24 * 60 * 60 * 1000);
   const completedThisWeek = tasks.filter(
     (t) => t.completed && t.completedAt && t.completedAt > sevenDaysAgo
   ).length;

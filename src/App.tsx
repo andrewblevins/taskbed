@@ -153,6 +153,9 @@ function WaitingView({ onSelectTask }: { onSelectTask: (task: Task) => void }) {
   const waitingTasks = tasks.filter((t) => !t.completed && t.status === 'waiting');
   const projectMap = new Map(projects.map((p) => [p.id, p]));
 
+  // Capture current time once on mount for consistent rendering
+  const [now] = useState(() => Date.now());
+
   // Sort by waiting duration (oldest first)
   const sortedTasks = [...waitingTasks].sort((a, b) =>
     (a.waitingSince || 0) - (b.waitingSince || 0)
@@ -173,7 +176,7 @@ function WaitingView({ onSelectTask }: { onSelectTask: (task: Task) => void }) {
           <div className="status-task-list">
             {sortedTasks.map((task) => {
               const waitingDays = task.waitingSince
-                ? Math.floor((Date.now() - task.waitingSince) / (1000 * 60 * 60 * 24))
+                ? Math.floor((now - task.waitingSince) / (1000 * 60 * 60 * 24))
                 : 0;
               const isOverdue = waitingDays > 7;
 
@@ -222,9 +225,9 @@ function WaitingView({ onSelectTask }: { onSelectTask: (task: Task) => void }) {
 }
 
 function App() {
-  // Auth state
+  // Auth state - only show loading if Supabase is configured
   const [user, setUser] = useState<User | null>(null);
-  const [authLoading, setAuthLoading] = useState(true);
+  const [authLoading, setAuthLoading] = useState(isSupabaseConfigured());
 
   const [currentView, setCurrentView] = useState<View>('tasks');
   const syncFromFile = useStore((s) => s.syncFromFile);
@@ -249,11 +252,13 @@ function App() {
   useEffect(() => {
     // If Supabase isn't configured, skip auth (local dev mode)
     if (!isSupabaseConfigured()) {
-      setAuthLoading(false);
       return;
     }
 
+    let mounted = true;
+
     getCurrentSession().then(({ session }) => {
+      if (!mounted) return;
       if (session?.user) {
         setUser(session.user);
         setCurrentUserId(session.user.id);
@@ -263,11 +268,15 @@ function App() {
 
     // Listen for auth changes
     const unsubscribe = onAuthStateChange((newUser) => {
+      if (!mounted) return;
       setUser(newUser);
       setCurrentUserId(newUser?.id ?? null);
     });
 
-    return () => unsubscribe();
+    return () => {
+      mounted = false;
+      unsubscribe();
+    };
   }, []);
 
   // Sync from file/Supabase on mount (picks up changes made by AI/external tools)
@@ -605,6 +614,7 @@ function App() {
 
       {selectedTask && (
         <TaskDetail
+          key={selectedTask.id}
           task={selectedTask}
           onClose={() => setSelectedTaskId(null)}
         />

@@ -424,7 +424,8 @@ export const useStore = create<TaskbedState>()(
         set((state) => ({
           attributes: state.attributes.filter((a) => a.id !== id),
           tasks: state.tasks.map((t) => {
-            const { [id]: _, ...rest } = t.attributes;
+            const { [id]: _removed, ...rest } = t.attributes;
+            void _removed; // Intentionally unused - we're removing this key
             return { ...t, attributes: rest };
           }),
         })),

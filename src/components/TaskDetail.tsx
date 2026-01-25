@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useStore } from '../store';
 import type { Task } from '../types';
 
@@ -22,6 +22,8 @@ export function TaskDetail({ task, onClose }: TaskDetailProps) {
     addTag,
     setDueDate,
   } = useStore();
+
+  // Component is keyed by task.id, so useState initializers run fresh for each task
   const [title, setTitle] = useState(task.title);
   const [notes, setNotes] = useState(task.notes || '');
   const [showWaitingPrompt, setShowWaitingPrompt] = useState(false);
@@ -29,11 +31,6 @@ export function TaskDetail({ task, onClose }: TaskDetailProps) {
   const [newTag, setNewTag] = useState('');
 
   const taskTags = task.tags || [];
-
-  useEffect(() => {
-    setTitle(task.title);
-    setNotes(task.notes || '');
-  }, [task]);
 
   const handleTitleBlur = () => {
     if (title.trim() && title !== task.title) {
