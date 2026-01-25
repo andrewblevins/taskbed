@@ -3411,6 +3411,7 @@ textarea:focus:not(:focus-visible) {
   text-decoration: underline;
 }
 
+.sync-button,
 .logout-button {
   width: 100%;
   padding: 0.5rem;
@@ -3424,6 +3425,7 @@ textarea:focus:not(:focus-visible) {
   transition: all 0.15s;
 }
 
+.sync-button:hover,
 .logout-button:hover {
   border-color: var(--color-text-tertiary);
   color: var(--color-text);

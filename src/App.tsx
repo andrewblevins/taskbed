@@ -65,16 +65,32 @@ function SearchResultItem({
 }
 
 // Count badges for sidebar
+function TasksCount() {
+  const tasks = useStore((s) => s.tasks);
+  const count = tasks.filter((t) => !t.completed && (t.status === 'active' || !t.status)).length;
+  if (count === 0) return null;
+  return <span className="nav-count">{count}</span>;
+}
+
+function ProjectsCount() {
+  const projects = useStore((s) => s.projects);
+  const count = projects.filter((p) => p.status === 'active' || !p.status).length;
+  if (count === 0) return null;
+  return <span className="nav-count">{count}</span>;
+}
+
 function SomedayCount() {
   const tasks = useStore((s) => s.tasks);
-  const count = tasks.filter((t) => !t.completed && (t.status === 'someday')).length;
+  const projects = useStore((s) => s.projects);
+  const count = tasks.filter((t) => !t.completed && t.status === 'someday').length +
+                projects.filter((p) => p.status === 'someday').length;
   if (count === 0) return null;
   return <span className="nav-count">{count}</span>;
 }
 
 function WaitingCount() {
   const tasks = useStore((s) => s.tasks);
-  const count = tasks.filter((t) => !t.completed && (t.status === 'waiting')).length;
+  const count = tasks.filter((t) => !t.completed && t.status === 'waiting').length;
   if (count === 0) return null;
   return <span className="nav-count">{count}</span>;
 }
@@ -550,6 +566,7 @@ function App() {
               <path d="M6 9l2 2 4-4" />
             </svg>
             Tasks
+            <TasksCount />
           </button>
           <button
             className={`nav-item ${currentView === 'projects' ? 'active' : ''}`}
@@ -560,6 +577,7 @@ function App() {
               <path d="M3 7h12" />
             </svg>
             Projects
+            <ProjectsCount />
           </button>
 
           <div className="nav-divider" />
@@ -657,9 +675,14 @@ function App() {
         <div className="sidebar-footer">
           <AttributeManager />
           {user && (
-            <button className="logout-button" onClick={handleLogout}>
-              Sign Out
-            </button>
+            <>
+              <button className="sync-button" onClick={() => syncFromFile()}>
+                Sync from Cloud
+              </button>
+              <button className="logout-button" onClick={handleLogout}>
+                Sign Out
+              </button>
+            </>
           )}
         </div>
       </nav>
