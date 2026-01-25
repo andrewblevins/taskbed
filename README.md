@@ -106,14 +106,13 @@ export SUPABASE_SERVICE_KEY=your-service-key
 npm run migrate:supabase
 ```
 
-### 4. Deploy to Netlify
+### 4. Deploy to Vercel
 
-1. Connect your GitHub repo to Netlify
-2. Set build command: `npm run build`
-3. Set publish directory: `dist`
-4. Add environment variables in Netlify dashboard:
+1. Connect your GitHub repo to Vercel
+2. Add environment variables in Vercel dashboard:
    - `VITE_SUPABASE_URL`
    - `VITE_SUPABASE_ANON_KEY`
+3. Deploy (Vercel auto-detects Vite settings)
 
 The app will:
 - Use localStorage for fast local access
