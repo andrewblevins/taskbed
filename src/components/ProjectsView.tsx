@@ -26,7 +26,7 @@ import type { Project, Area } from '../types';
 function DraggableProject({ project, onComplete }: { project: Project; onComplete: (project: Project) => void }) {
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(project.name);
-  const { updateProject, deleteProject, tasks } = useStore();
+  const { updateProject, tasks } = useStore();
 
   const {
     attributes,
@@ -54,14 +54,7 @@ function DraggableProject({ project, onComplete }: { project: Project; onComplet
     setIsEditing(false);
   };
 
-  const handleDelete = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (confirm(`Delete "${project.name}" and unassign all its tasks?`)) {
-      deleteProject(project.id);
-    }
-  };
-
-  const handleComplete = (e: React.MouseEvent) => {
+  const handleCircleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     onComplete(project);
   };
@@ -101,17 +94,15 @@ function DraggableProject({ project, onComplete }: { project: Project; onComplet
           <circle cx="9" cy="10" r="1.5" />
         </svg>
       </button>
-      <div className="pv-project-icon">
+      <button className="pv-project-icon" onClick={handleCircleClick} title="Complete or cancel project">
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2">
           <circle cx="10" cy="10" r="7" />
         </svg>
-      </div>
+      </button>
       <span className="pv-project-name" onClick={() => setIsEditing(true)}>
         {project.name}
       </span>
       <span className="pv-task-count">{taskCount}</span>
-      <button className="pv-complete" onClick={handleComplete} title="Mark complete">✓</button>
-      <button className="pv-delete" onClick={handleDelete} title="Delete">×</button>
     </div>
   );
 }

@@ -26,7 +26,7 @@ interface TaskItemProps {
 }
 
 export function TaskItem({ task, onSelect, isFocused }: TaskItemProps) {
-  const { toggleTask, projects } = useStore();
+  const { toggleTask, deleteTask, projects } = useStore();
   const project = projects.find((p) => p.id === task.projectId);
   const itemRef = useRef<HTMLDivElement>(null);
 
@@ -78,6 +78,16 @@ export function TaskItem({ task, onSelect, isFocused }: TaskItemProps) {
           )}
         </div>
       </div>
+      <button
+        className="task-delete"
+        onClick={(e) => {
+          e.stopPropagation();
+          deleteTask(task.id);
+        }}
+        aria-label="Delete task"
+      >
+        ×
+      </button>
     </div>
   );
 }
