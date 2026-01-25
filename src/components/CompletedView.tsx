@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useStore } from '../store';
 import type { Task, Project } from '../types';
 
@@ -5,17 +6,36 @@ interface CompletedViewProps {
   onSelectTask: (task: Task) => void;
 }
 
+type DatePeriod = 'today' | 'yesterday' | 'thisWeek' | 'older';
+
+function getDatePeriod(timestamp: number | undefined): DatePeriod {
+  if (!timestamp) return 'older';
+  const now = new Date();
+  const date = new Date(timestamp);
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const taskDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const diffDays = Math.floor((today.getTime() - taskDay.getTime()) / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) return 'today';
+  if (diffDays === 1) return 'yesterday';
+  if (diffDays < 7) return 'thisWeek';
+  return 'older';
+}
+
 function formatCompletedDate(timestamp?: number): string {
   if (!timestamp) return '';
   const date = new Date(timestamp);
-  const now = new Date();
-  const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
-
-  if (diffDays === 0) return 'Today';
-  if (diffDays === 1) return 'Yesterday';
-  if (diffDays < 7) return `${diffDays} days ago`;
   return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 }
+
+const periodLabels: Record<DatePeriod, string> = {
+  today: 'Today',
+  yesterday: 'Yesterday',
+  thisWeek: 'This Week',
+  older: 'Older',
+};
+
+const periodOrder: DatePeriod[] = ['today', 'yesterday', 'thisWeek', 'older'];
 
 export function CompletedView({ onSelectTask }: CompletedViewProps) {
   const tasks = useStore((s) => s.tasks);
@@ -23,13 +43,34 @@ export function CompletedView({ onSelectTask }: CompletedViewProps) {
   const updateTask = useStore((s) => s.updateTask);
   const reactivateProject = useStore((s) => s.reactivateProject);
 
-  const completedTasks = tasks
-    .filter((t) => t.completed)
-    .sort((a, b) => (b.completedAt || 0) - (a.completedAt || 0));
+  const completedTasks = useMemo(() =>
+    tasks
+      .filter((t) => t.completed)
+      .sort((a, b) => (b.completedAt || 0) - (a.completedAt || 0)),
+    [tasks]
+  );
 
-  const completedProjects = projects
-    .filter((p) => p.status === 'completed' || p.status === 'cancelled')
-    .sort((a, b) => (b.completedAt || 0) - (a.completedAt || 0));
+  const completedProjects = useMemo(() =>
+    projects
+      .filter((p) => p.status === 'completed' || p.status === 'cancelled')
+      .sort((a, b) => (b.completedAt || 0) - (a.completedAt || 0)),
+    [projects]
+  );
+
+  // Group tasks by date period
+  const tasksByPeriod = useMemo(() => {
+    const groups: Record<DatePeriod, Task[]> = {
+      today: [],
+      yesterday: [],
+      thisWeek: [],
+      older: [],
+    };
+    completedTasks.forEach((task) => {
+      const period = getDatePeriod(task.completedAt);
+      groups[period].push(task);
+    });
+    return groups;
+  }, [completedTasks]);
 
   const restoreTask = (e: React.MouseEvent, taskId: string) => {
     e.stopPropagation();
@@ -71,20 +112,30 @@ export function CompletedView({ onSelectTask }: CompletedViewProps) {
               </section>
             )}
 
-            {/* Completed Tasks Section */}
+            {/* Completed Tasks Section - Grouped by Date Period */}
             {completedTasks.length > 0 && (
               <section className="completed-section">
                 <h3 className="completed-section-header">Tasks</h3>
-                <div className="completed-list">
-                  {completedTasks.map((task) => (
-                    <CompletedTaskItem
-                      key={task.id}
-                      task={task}
-                      onSelect={() => onSelectTask(task)}
-                      onRestore={(e) => restoreTask(e, task.id)}
-                    />
-                  ))}
-                </div>
+                {periodOrder.map((period) => {
+                  const periodTasks = tasksByPeriod[period];
+                  if (periodTasks.length === 0) return null;
+                  return (
+                    <div key={period} className="completed-period-group">
+                      <h4 className="completed-period-header">{periodLabels[period]}</h4>
+                      <div className="completed-list">
+                        {periodTasks.map((task) => (
+                          <CompletedTaskItem
+                            key={task.id}
+                            task={task}
+                            onSelect={() => onSelectTask(task)}
+                            onRestore={(e) => restoreTask(e, task.id)}
+                            showDate={period === 'thisWeek' || period === 'older'}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
               </section>
             )}
           </>
@@ -123,10 +174,12 @@ function CompletedTaskItem({
   task,
   onSelect,
   onRestore,
+  showDate = true,
 }: {
   task: Task;
   onSelect: () => void;
   onRestore: (e: React.MouseEvent) => void;
+  showDate?: boolean;
 }) {
   const projects = useStore((s) => s.projects);
   const project = task.projectId ? projects.find((p) => p.id === task.projectId) : null;
@@ -138,7 +191,7 @@ function CompletedTaskItem({
         {project && <span className="completed-item-project">{project.name}</span>}
       </div>
       <div className="completed-item-actions">
-        <span className="completed-date">{formatCompletedDate(task.completedAt)}</span>
+        {showDate && <span className="completed-date">{formatCompletedDate(task.completedAt)}</span>}
         <button className="restore-btn" onClick={onRestore}>
           Restore
         </button>

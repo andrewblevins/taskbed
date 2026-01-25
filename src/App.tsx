@@ -242,7 +242,9 @@ function App() {
   const [currentView, setCurrentView] = useState<View>('tasks');
   const syncFromFile = useStore((s) => s.syncFromFile);
   const reviewInProgress = useStore((s) => s.reviewInProgress);
+  const reviewStep = useStore((s) => s.reviewStep);
   const startReview = useStore((s) => s.startReview);
+  const resumeReview = useStore((s) => s.resumeReview);
   const availableTags = useStore((s) => s.availableTags);
   const selectedTagFilter = useStore((s) => s.selectedTagFilter);
   const setTagFilter = useStore((s) => s.setTagFilter);
@@ -415,6 +417,14 @@ function App() {
     }
   }, [futureStates.length, redo]);
 
+  const toggleTask = useStore((s) => s.toggleTask);
+
+  const handleToggleComplete = useCallback(() => {
+    if (focusedTaskIndex >= 0 && focusedTaskIndex < visibleTasks.length) {
+      toggleTask(visibleTasks[focusedTaskIndex].id);
+    }
+  }, [focusedTaskIndex, visibleTasks, toggleTask]);
+
   // Set up keyboard shortcuts
   useKeyboardShortcuts(
     {
@@ -422,6 +432,7 @@ function App() {
       onNavigateUp: handleNavigateUp,
       onNavigateDown: handleNavigateDown,
       onSelectTask: handleSelectTask,
+      onToggleComplete: handleToggleComplete,
       onEscape: handleEscape,
       onUndo: handleUndo,
       onRedo: handleRedo,
@@ -578,16 +589,38 @@ function App() {
             <CompletedCount />
           </button>
 
-          <button
-            className="nav-item review-nav"
-            onClick={() => { startReview(); setSidebarOpen(false); }}
-          >
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M9 2v4M9 12v4M2 9h4M12 9h4" />
-              <circle cx="9" cy="9" r="3" />
-            </svg>
-            Weekly Review
-          </button>
+          {reviewStep > 0 ? (
+            <div className="review-nav-group">
+              <button
+                className="nav-item review-nav resume"
+                onClick={() => { resumeReview(); setSidebarOpen(false); }}
+              >
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M9 2v4M9 12v4M2 9h4M12 9h4" />
+                  <circle cx="9" cy="9" r="3" />
+                </svg>
+                Resume Review
+                <span className="review-step-badge">Step {reviewStep + 1}</span>
+              </button>
+              <button
+                className="nav-item review-nav-secondary"
+                onClick={() => { startReview(); setSidebarOpen(false); }}
+              >
+                Start New
+              </button>
+            </div>
+          ) : (
+            <button
+              className="nav-item review-nav"
+              onClick={() => { startReview(); setSidebarOpen(false); }}
+            >
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M9 2v4M9 12v4M2 9h4M12 9h4" />
+                <circle cx="9" cy="9" r="3" />
+              </svg>
+              Weekly Review
+            </button>
+          )}
 
           {/* GTD Context Tags Filter */}
           {availableTags.length > 0 && (

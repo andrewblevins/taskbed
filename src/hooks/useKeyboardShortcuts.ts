@@ -6,6 +6,7 @@ interface KeyboardShortcutsOptions {
   onNavigateUp?: () => void;
   onNavigateDown?: () => void;
   onSelectTask?: () => void;
+  onToggleComplete?: () => void;
   onEscape?: () => void;
   onUndo?: () => void;
   onRedo?: () => void;
@@ -22,6 +23,7 @@ export function useKeyboardShortcuts(
     onNavigateUp,
     onNavigateDown,
     onSelectTask,
+    onToggleComplete,
     onEscape,
     onUndo,
     onRedo,
@@ -102,6 +104,13 @@ export function useKeyboardShortcuts(
         return;
       }
 
+      // Space - Toggle completion on focused task
+      if (e.key === ' ' && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        e.preventDefault();
+        onToggleComplete?.();
+        return;
+      }
+
       // / - Focus search (vim-style)
       if (e.key === '/' && !e.metaKey && !e.ctrlKey && !e.altKey) {
         e.preventDefault();
@@ -114,7 +123,7 @@ export function useKeyboardShortcuts(
         return;
       }
     },
-    [enabled, onNewTask, onSearch, onNavigateUp, onNavigateDown, onSelectTask, onEscape, onUndo, onRedo, searchInputRef]
+    [enabled, onNewTask, onSearch, onNavigateUp, onNavigateDown, onSelectTask, onToggleComplete, onEscape, onUndo, onRedo, searchInputRef]
   );
 
   useEffect(() => {

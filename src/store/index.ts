@@ -105,6 +105,7 @@ interface TaskbedState {
 
   // Review actions
   startReview: () => void;
+  resumeReview: () => void;
   nextReviewStep: () => void;
   prevReviewStep: () => void;
   exitReview: () => void;
@@ -188,9 +189,10 @@ export const useStore = create<TaskbedState>()(
       reviewStep: 0,
 
       startReview: () => set({ reviewInProgress: true, reviewStep: 0 }),
+      resumeReview: () => set({ reviewInProgress: true }),
       nextReviewStep: () => set((state) => ({ reviewStep: state.reviewStep + 1 })),
       prevReviewStep: () => set((state) => ({ reviewStep: Math.max(0, state.reviewStep - 1) })),
-      exitReview: () => set({ reviewInProgress: false, reviewStep: 0 }),
+      exitReview: () => set({ reviewInProgress: false }),
 
       addTask: (title, projectId, status = 'active') =>
         set((state) => ({
