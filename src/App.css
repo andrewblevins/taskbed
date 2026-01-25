@@ -3357,3 +3357,335 @@ textarea:focus:not(:focus-visible) {
   border-color: var(--color-text-tertiary);
   color: var(--color-text);
 }
+
+/* ==========================================
+   MOBILE RESPONSIVE STYLES
+   ========================================== */
+
+/* Mobile menu toggle button */
+.mobile-menu-toggle {
+  display: none;
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  color: white;
+  border: none;
+  box-shadow: var(--shadow-lg);
+  cursor: pointer;
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+}
+
+.mobile-menu-toggle svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* Tablet styles */
+@media (max-width: 1024px) {
+  .content-body {
+    padding: 1.5rem;
+  }
+
+  .content-header {
+    padding: 1.25rem 1.5rem;
+  }
+
+  .task-detail {
+    max-width: 480px;
+  }
+}
+
+/* Mobile styles */
+@media (max-width: 768px) {
+  .app {
+    flex-direction: column;
+  }
+
+  /* Sidebar becomes slide-out menu */
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 280px;
+    z-index: 1001;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    box-shadow: var(--shadow-lg);
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  /* Overlay when sidebar is open */
+  .sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+  }
+
+  .sidebar-overlay.visible {
+    display: block;
+  }
+
+  /* Show mobile menu toggle */
+  .mobile-menu-toggle {
+    display: flex;
+  }
+
+  /* Main content takes full width */
+  .main-content {
+    width: 100%;
+  }
+
+  .content-header {
+    padding: 1rem;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .content-header h2 {
+    font-size: 1.25rem;
+    width: 100%;
+  }
+
+  .header-controls {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .content-body {
+    padding: 1rem;
+  }
+
+  /* Task input */
+  .task-input input {
+    padding: 0.875rem 1rem;
+    font-size: 1rem;
+  }
+
+  /* Task groups */
+  .task-group {
+    padding: 1rem;
+    border-radius: var(--radius-lg);
+  }
+
+  /* Task items */
+  .task-item {
+    padding: 0.75rem 0;
+  }
+
+  .task-checkbox {
+    width: 20px;
+    height: 20px;
+  }
+
+  .task-content {
+    font-size: 0.9375rem;
+  }
+
+  /* Task detail modal - full screen on mobile */
+  .task-detail-overlay {
+    align-items: flex-end;
+  }
+
+  .task-detail {
+    max-width: 100%;
+    max-height: 90vh;
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    margin: 0;
+  }
+
+  .task-detail-header {
+    padding: 1.25rem 1rem 0;
+  }
+
+  .task-detail-title {
+    font-size: 1.125rem;
+  }
+
+  .task-detail-body {
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  .task-detail-footer {
+    padding: 0.75rem 1rem 1.25rem;
+  }
+
+  /* Projects view */
+  .projects-container {
+    flex-direction: column;
+  }
+
+  .areas-section,
+  .projects-section {
+    width: 100%;
+  }
+
+  /* Status views */
+  .status-task-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .status-task-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  /* Weekly review */
+  .review-container {
+    padding: 1rem;
+  }
+
+  .review-card {
+    padding: 1.5rem;
+  }
+
+  .review-title {
+    font-size: 1.25rem;
+  }
+
+  /* Search */
+  .search-container {
+    margin-top: 0.75rem;
+  }
+
+  .search-results {
+    max-height: 60vh;
+  }
+
+  /* Grouping selector */
+  .grouping-selector {
+    flex-wrap: wrap;
+  }
+
+  .grouping-selector label {
+    width: 100%;
+    margin-bottom: 0.25rem;
+  }
+
+  /* Tags in sidebar */
+  .nav-section-label {
+    font-size: 0.6875rem;
+  }
+
+  .nav-tag {
+    font-size: 0.8125rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  /* Auth on mobile */
+  .auth-box {
+    padding: 1.5rem;
+    margin: 1rem;
+  }
+
+  .auth-box h1 {
+    font-size: 1.5rem;
+  }
+}
+
+/* Small mobile styles */
+@media (max-width: 480px) {
+  .content-header h2 {
+    font-size: 1.125rem;
+  }
+
+  .task-group {
+    padding: 0.875rem;
+  }
+
+  .group-header {
+    font-size: 0.6875rem;
+  }
+
+  .task-content {
+    font-size: 0.875rem;
+  }
+
+  .task-meta {
+    font-size: 0.6875rem;
+  }
+
+  .task-detail-title {
+    font-size: 1rem;
+  }
+
+  .task-detail-field label {
+    font-size: 0.625rem;
+  }
+
+  .task-detail-field textarea,
+  .task-detail-field select {
+    font-size: 0.875rem;
+    padding: 0.625rem 0.875rem;
+  }
+
+  /* Buttons */
+  .status-action-btn {
+    padding: 0.375rem 0.625rem;
+    font-size: 0.6875rem;
+  }
+
+  .delete-button {
+    padding: 0.5rem 0.875rem;
+    font-size: 0.75rem;
+  }
+
+  /* Mobile menu button */
+  .mobile-menu-toggle {
+    width: 48px;
+    height: 48px;
+    bottom: 1rem;
+    right: 1rem;
+  }
+}
+
+/* Touch-friendly adjustments */
+@media (hover: none) and (pointer: coarse) {
+  .task-checkbox {
+    width: 24px;
+    height: 24px;
+  }
+
+  .nav-item {
+    padding: 0.75rem;
+    min-height: 44px;
+  }
+
+  .status-action-btn {
+    min-height: 36px;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .task-item {
+    padding: 0.875rem 0;
+  }
+
+  /* Prevent hover states on touch */
+  .task-item:hover {
+    background: transparent;
+  }
+
+  .nav-item:hover {
+    background: transparent;
+    color: var(--color-text-secondary);
+  }
+
+  .nav-item.active:hover {
+    background: var(--color-accent);
+    color: white;
+  }
+}

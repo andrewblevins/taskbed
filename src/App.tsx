@@ -239,6 +239,9 @@ function App() {
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
+  // Mobile sidebar state
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
   // Task input ref for keyboard shortcuts
   const taskInputRef = useRef<HTMLInputElement>(null);
 
@@ -414,10 +417,37 @@ function App() {
     await signOut();
   };
 
+  // Close sidebar when changing views on mobile
+  const handleViewChange = (view: View) => {
+    setCurrentView(view);
+    setSidebarOpen(false);
+  };
+
   return (
     <div className="app">
+      {/* Mobile sidebar overlay */}
+      <div
+        className={`sidebar-overlay ${sidebarOpen ? 'visible' : ''}`}
+        onClick={() => setSidebarOpen(false)}
+      />
+
+      {/* Mobile menu toggle */}
+      <button
+        className="mobile-menu-toggle"
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+        aria-label="Toggle menu"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          {sidebarOpen ? (
+            <path d="M6 18L18 6M6 6l12 12" />
+          ) : (
+            <path d="M4 6h16M4 12h16M4 18h16" />
+          )}
+        </svg>
+      </button>
+
       {/* Sidebar Navigation */}
-      <nav className="sidebar">
+      <nav className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
         <div className="sidebar-header">
           <h1>Taskbed</h1>
           <div className="search-container">
@@ -454,7 +484,7 @@ function App() {
         <div className="sidebar-nav">
           <button
             className={`nav-item ${currentView === 'tasks' ? 'active' : ''}`}
-            onClick={() => setCurrentView('tasks')}
+            onClick={() => handleViewChange('tasks')}
           >
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="9" cy="9" r="7" />
@@ -464,7 +494,7 @@ function App() {
           </button>
           <button
             className={`nav-item ${currentView === 'projects' ? 'active' : ''}`}
-            onClick={() => setCurrentView('projects')}
+            onClick={() => handleViewChange('projects')}
           >
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="2">
               <rect x="3" y="3" width="12" height="12" rx="2" />
@@ -477,7 +507,7 @@ function App() {
 
           <button
             className={`nav-item ${currentView === 'someday' ? 'active' : ''}`}
-            onClick={() => setCurrentView('someday')}
+            onClick={() => handleViewChange('someday')}
           >
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="9" cy="9" r="7" />
@@ -488,7 +518,7 @@ function App() {
           </button>
           <button
             className={`nav-item ${currentView === 'waiting' ? 'active' : ''}`}
-            onClick={() => setCurrentView('waiting')}
+            onClick={() => handleViewChange('waiting')}
           >
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="9" cy="9" r="7" />
@@ -500,7 +530,7 @@ function App() {
 
           <button
             className="nav-item review-nav"
-            onClick={startReview}
+            onClick={() => { startReview(); setSidebarOpen(false); }}
           >
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M9 2v4M9 12v4M2 9h4M12 9h4" />
