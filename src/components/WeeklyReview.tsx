@@ -305,7 +305,7 @@ function ReviewProjects({ onNext, onPrev }: { onNext: () => void; onPrev: () => 
   };
 
   // Filter out already-completed projects
-  const activeProjects = projects.filter((p) => !p.completed);
+  const activeProjects = projects.filter((p) => p.status === 'active' || p.status === undefined);
 
   const projectsWithCounts = activeProjects.map((p) => ({
     ...p,

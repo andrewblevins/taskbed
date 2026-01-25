@@ -7,6 +7,8 @@ interface KeyboardShortcutsOptions {
   onNavigateDown?: () => void;
   onSelectTask?: () => void;
   onEscape?: () => void;
+  onUndo?: () => void;
+  onRedo?: () => void;
   enabled?: boolean;
 }
 
@@ -21,6 +23,8 @@ export function useKeyboardShortcuts(
     onNavigateDown,
     onSelectTask,
     onEscape,
+    onUndo,
+    onRedo,
     enabled = true,
   } = options;
 
@@ -31,6 +35,20 @@ export function useKeyboardShortcuts(
       // Don't trigger shortcuts when typing in inputs (except for escape)
       const target = e.target as HTMLElement;
       const isInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable;
+
+      // Cmd/Ctrl+Z - Undo (works even in inputs)
+      if ((e.metaKey || e.ctrlKey) && e.key === 'z' && !e.shiftKey) {
+        e.preventDefault();
+        onUndo?.();
+        return;
+      }
+
+      // Cmd/Ctrl+Shift+Z - Redo (works even in inputs)
+      if ((e.metaKey || e.ctrlKey) && e.key === 'z' && e.shiftKey) {
+        e.preventDefault();
+        onRedo?.();
+        return;
+      }
 
       // Cmd/Ctrl+K - Focus search (works even in inputs)
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
@@ -96,7 +114,7 @@ export function useKeyboardShortcuts(
         return;
       }
     },
-    [enabled, onNewTask, onSearch, onNavigateUp, onNavigateDown, onSelectTask, onEscape, searchInputRef]
+    [enabled, onNewTask, onSearch, onNavigateUp, onNavigateDown, onSelectTask, onEscape, onUndo, onRedo, searchInputRef]
   );
 
   useEffect(() => {

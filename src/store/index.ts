@@ -1,7 +1,8 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import { temporal } from 'zundo';
 import { v4 as uuid } from 'uuid';
-import type { Task, Project, Area, AttributeDefinition, ViewGrouping, TaskStatus } from '../types';
+import type { Task, Project, Area, AttributeDefinition, ViewGrouping, TaskStatus, ProjectStatus } from '../types';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
 const API_URL = 'http://localhost:3847/api/data';
@@ -126,6 +127,8 @@ interface TaskbedState {
   updateProject: (id: string, updates: Partial<Project>) => void;
   deleteProject: (id: string) => void;
   completeProject: (id: string) => void;
+  cancelProject: (id: string) => void;
+  reactivateProject: (id: string) => void;
   reorderProjects: (projectIds: string[]) => void;
   moveProjectToArea: (projectId: string, areaId: string | undefined) => void;
 
@@ -159,7 +162,8 @@ interface TaskbedState {
 }
 
 export const useStore = create<TaskbedState>()(
-  persist(
+  temporal(
+    persist(
     (set) => ({
       tasks: [],
       projects: [],
@@ -326,7 +330,7 @@ export const useStore = create<TaskbedState>()(
           return {
             projects: [
               ...state.projects,
-              { id: uuid(), name, areaId, order: maxOrder + 1, createdAt: Date.now() },
+              { id: uuid(), name, areaId, order: maxOrder + 1, createdAt: Date.now(), status: 'active' as ProjectStatus },
             ],
           };
         }),
@@ -349,7 +353,21 @@ export const useStore = create<TaskbedState>()(
       completeProject: (id) =>
         set((state) => ({
           projects: state.projects.map((p) =>
-            p.id === id ? { ...p, completed: true, completedAt: Date.now() } : p
+            p.id === id ? { ...p, status: 'completed' as ProjectStatus, completedAt: Date.now() } : p
+          ),
+        })),
+
+      cancelProject: (id) =>
+        set((state) => ({
+          projects: state.projects.map((p) =>
+            p.id === id ? { ...p, status: 'cancelled' as ProjectStatus, completedAt: Date.now() } : p
+          ),
+        })),
+
+      reactivateProject: (id) =>
+        set((state) => ({
+          projects: state.projects.map((p) =>
+            p.id === id ? { ...p, status: 'active' as ProjectStatus, completedAt: undefined } : p
           ),
         })),
 
@@ -526,9 +544,64 @@ export const useStore = create<TaskbedState>()(
     {
       name: 'taskbed-storage',
       storage: createJSONStorage(() => fileBackedStorage),
+      version: 2,
+      migrate: (persistedState, version) => {
+        const state = persistedState as TaskbedState;
+        if (version < 2) {
+          // Migrate projects from completed boolean to status field
+          state.projects = state.projects.map((p) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const oldProject = p as any;
+            if (p.status === undefined) {
+              return {
+                ...p,
+                status: oldProject.completed ? 'completed' : 'active',
+              } as Project;
+            }
+            return p;
+          });
+        }
+        return state;
+      },
+    }
+  ),
+    {
+      // Limit history to prevent memory bloat
+      limit: 50,
+      // Only track data changes, not UI state like reviewInProgress
+      partialize: (state) => {
+        const { reviewInProgress, reviewStep, currentGrouping, selectedTagFilter, ...data } = state;
+        void reviewInProgress;
+        void reviewStep;
+        void currentGrouping;
+        void selectedTagFilter;
+        return data;
+      },
     }
   )
 );
+
+// Export temporal store for undo/redo access
+// zundo stores temporal state in useStore.temporal which is a vanilla zustand store
+// We need to create a hook that uses useSyncExternalStore to make it reactive
+import { useSyncExternalStore } from 'react';
+
+type TemporalStoreState = {
+  pastStates: Partial<TaskbedState>[];
+  futureStates: Partial<TaskbedState>[];
+  undo: () => void;
+  redo: () => void;
+  clear: () => void;
+};
+
+export function useTemporalStore<T>(selector: (state: TemporalStoreState) => T): T {
+  const temporalStore = useStore.temporal;
+  return useSyncExternalStore(
+    temporalStore.subscribe,
+    () => selector(temporalStore.getState() as TemporalStoreState),
+    () => selector(temporalStore.getState() as TemporalStoreState)
+  );
+}
 
 // Real-time subscription for cross-device sync
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

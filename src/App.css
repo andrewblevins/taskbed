@@ -3689,3 +3689,275 @@ textarea:focus:not(:focus-visible) {
     color: white;
   }
 }
+
+/* ============================================
+   Completed View Styles
+   ============================================ */
+
+.completed-section {
+  margin-bottom: 32px;
+}
+
+.completed-section-header {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin: 0 0 12px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.completed-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.completed-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  transition: background 0.15s ease;
+}
+
+.completed-item.clickable {
+  cursor: pointer;
+}
+
+.completed-item.clickable:hover {
+  background: var(--color-border-light);
+}
+
+.completed-item-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.completed-item-name {
+  font-size: 15px;
+  color: var(--color-text);
+  text-decoration: line-through;
+  opacity: 0.7;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.completed-item-project {
+  font-size: 12px;
+  color: var(--color-text-tertiary);
+  background: var(--color-border-light);
+  padding: 2px 8px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.completed-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.completed-date {
+  font-size: 12px;
+  color: var(--color-text-tertiary);
+}
+
+.restore-btn {
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-accent);
+  background: transparent;
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.restore-btn:hover {
+  background: var(--color-accent);
+  color: white;
+}
+
+.project-status-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  flex-shrink: 0;
+}
+
+.project-status-badge.status-completed {
+  background: rgba(92, 216, 90, 0.15);
+  color: #2d8a2b;
+}
+
+.project-status-badge.status-cancelled {
+  background: rgba(134, 134, 139, 0.15);
+  color: #6e6e73;
+}
+
+/* ============================================
+   Project Completion Dialog Styles
+   ============================================ */
+
+.dialog-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+  backdrop-filter: blur(4px);
+}
+
+.dialog {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  width: 100%;
+  max-width: 400px;
+  padding: 24px;
+}
+
+.dialog h3 {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.dialog-project-name {
+  font-size: 16px;
+  color: var(--color-text-secondary);
+  margin: 0 0 20px 0;
+}
+
+.dialog-warning {
+  background: rgba(255, 107, 107, 0.1);
+  border: 1px solid rgba(255, 107, 107, 0.2);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  margin-bottom: 20px;
+}
+
+.dialog-warning p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--color-text);
+}
+
+.dialog-warning-note {
+  margin-top: 8px !important;
+  font-size: 13px !important;
+  color: var(--color-text-secondary) !important;
+}
+
+.dialog-prompt {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  margin: 0 0 16px 0;
+}
+
+.dialog-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.dialog-btn {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: left;
+}
+
+.dialog-btn:hover {
+  background: var(--color-border-light);
+}
+
+.dialog-btn .btn-icon {
+  font-size: 20px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dialog-btn.complete .btn-icon {
+  background: rgba(92, 216, 90, 0.15);
+  color: #2d8a2b;
+}
+
+.dialog-btn.cancel-project .btn-icon {
+  background: rgba(134, 134, 139, 0.15);
+  color: #6e6e73;
+}
+
+.dialog-btn .btn-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dialog-btn .btn-label {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.dialog-btn .btn-hint {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.dialog-close-btn {
+  width: 100%;
+  padding: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.dialog-close-btn:hover {
+  color: var(--color-text);
+}
+
+/* Mobile responsive adjustments for dialog */
+@media (max-width: 480px) {
+  .dialog {
+    max-width: none;
+    margin: 20px;
+  }
+
+  .dialog-btn {
+    padding: 14px;
+    gap: 12px;
+  }
+}

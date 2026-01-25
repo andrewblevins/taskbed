@@ -35,6 +35,7 @@ export async function addProject(name: string, color?: string): Promise<string> 
     color,
     order: maxOrder + 1,
     createdAt: Date.now(),
+    status: 'active',
   };
 
   await updateData(s => ({

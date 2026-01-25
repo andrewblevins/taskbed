@@ -6,15 +6,16 @@ import { TaskDetail } from './components/TaskDetail';
 import { ProjectsView } from './components/ProjectsView';
 import { AttributeManager } from './components/AttributeManager';
 import { WeeklyReview } from './components/WeeklyReview';
+import { CompletedView } from './components/CompletedView';
 import { Auth } from './components/Auth';
-import { useStore, subscribeToRealtimeUpdates, setCurrentUserId } from './store';
+import { useStore, useTemporalStore, subscribeToRealtimeUpdates, setCurrentUserId } from './store';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { getCurrentSession, onAuthStateChange, signOut, isSupabaseConfigured } from './lib/supabase';
 import type { Task } from './types';
 import type { User } from '@supabase/supabase-js';
 import './App.css';
 
-type View = 'tasks' | 'projects' | 'someday' | 'waiting';
+type View = 'tasks' | 'projects' | 'someday' | 'waiting' | 'completed';
 
 // Search result item with highlighted matches
 function SearchResultItem({
@@ -73,6 +74,15 @@ function SomedayCount() {
 function WaitingCount() {
   const tasks = useStore((s) => s.tasks);
   const count = tasks.filter((t) => !t.completed && (t.status === 'waiting')).length;
+  if (count === 0) return null;
+  return <span className="nav-count">{count}</span>;
+}
+
+function CompletedCount() {
+  const tasks = useStore((s) => s.tasks);
+  const projects = useStore((s) => s.projects);
+  const count = tasks.filter((t) => t.completed).length +
+                projects.filter((p) => p.status === 'completed' || p.status === 'cancelled').length;
   if (count === 0) return null;
   return <span className="nav-count">{count}</span>;
 }
@@ -237,6 +247,12 @@ function App() {
   const selectedTagFilter = useStore((s) => s.selectedTagFilter);
   const setTagFilter = useStore((s) => s.setTagFilter);
 
+  // Undo/Redo
+  const undo = useTemporalStore((state) => state.undo);
+  const redo = useTemporalStore((state) => state.redo);
+  const pastStates = useTemporalStore((state) => state.pastStates);
+  const futureStates = useTemporalStore((state) => state.futureStates);
+
   // Search state
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchFocused, setIsSearchFocused] = useState(false);
@@ -387,6 +403,18 @@ function App() {
     }
   }, [selectedTaskId]);
 
+  const handleUndo = useCallback(() => {
+    if (pastStates.length > 0) {
+      undo();
+    }
+  }, [pastStates.length, undo]);
+
+  const handleRedo = useCallback(() => {
+    if (futureStates.length > 0) {
+      redo();
+    }
+  }, [futureStates.length, redo]);
+
   // Set up keyboard shortcuts
   useKeyboardShortcuts(
     {
@@ -395,6 +423,8 @@ function App() {
       onNavigateDown: handleNavigateDown,
       onSelectTask: handleSelectTask,
       onEscape: handleEscape,
+      onUndo: handleUndo,
+      onRedo: handleRedo,
       enabled: !reviewInProgress,
     },
     searchInputRef
@@ -538,6 +568,17 @@ function App() {
           </button>
 
           <button
+            className={`nav-item ${currentView === 'completed' ? 'active' : ''}`}
+            onClick={() => handleViewChange('completed')}
+          >
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M4 9l4 4L14 5" />
+            </svg>
+            Completed
+            <CompletedCount />
+          </button>
+
+          <button
             className="nav-item review-nav"
             onClick={() => { startReview(); setSidebarOpen(false); }}
           >
@@ -609,6 +650,10 @@ function App() {
 
         {currentView === 'waiting' && (
           <WaitingView onSelectTask={(task: Task) => setSelectedTaskId(task.id)} />
+        )}
+
+        {currentView === 'completed' && (
+          <CompletedView onSelectTask={(task: Task) => setSelectedTaskId(task.id)} />
         )}
       </div>
 

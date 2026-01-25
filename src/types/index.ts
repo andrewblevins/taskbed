@@ -26,6 +26,8 @@ export interface Area {
   createdAt: number;
 }
 
+export type ProjectStatus = 'active' | 'completed' | 'cancelled';
+
 export interface Project {
   id: string;
   name: string;
@@ -33,8 +35,8 @@ export interface Project {
   areaId?: string; // optional - projects can be in an area or standalone
   order: number;
   createdAt: number;
-  completed?: boolean;
-  completedAt?: number;
+  status: ProjectStatus;
+  completedAt?: number; // timestamp when completed or cancelled
 }
 
 export interface AttributeDefinition {

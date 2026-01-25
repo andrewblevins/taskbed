@@ -19,13 +19,14 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { useStore } from '../store';
+import { ProjectCompletionDialog } from './ProjectCompletionDialog';
 import type { Project, Area } from '../types';
 
 // Draggable Project Item
-function DraggableProject({ project }: { project: Project }) {
+function DraggableProject({ project, onComplete }: { project: Project; onComplete: (project: Project) => void }) {
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(project.name);
-  const { updateProject, deleteProject, completeProject, tasks } = useStore();
+  const { updateProject, deleteProject, tasks } = useStore();
 
   const {
     attributes,
@@ -62,7 +63,7 @@ function DraggableProject({ project }: { project: Project }) {
 
   const handleComplete = (e: React.MouseEvent) => {
     e.stopPropagation();
-    completeProject(project.id);
+    onComplete(project);
   };
 
   if (isEditing) {
@@ -247,6 +248,7 @@ export function ProjectsView() {
   const [newProjectName, setNewProjectName] = useState('');
   const [newAreaName, setNewAreaName] = useState('');
   const [activeProject, setActiveProject] = useState<Project | null>(null);
+  const [completingProject, setCompletingProject] = useState<Project | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -257,9 +259,9 @@ export function ProjectsView() {
     })
   );
 
-  // Sort areas and projects by order, filtering out completed projects
+  // Sort areas and projects by order, filtering out completed/cancelled projects
   const sortedAreas = [...areas].sort((a, b) => a.order - b.order);
-  const activeProjects = projects.filter((p) => !p.completed);
+  const activeProjects = projects.filter((p) => p.status === 'active' || p.status === undefined);
   const sortedProjects = [...activeProjects].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
   // Group projects by area
@@ -401,7 +403,7 @@ export function ProjectsView() {
                 <DroppableArea area={area}>
                   <div className="pv-projects-list">
                     {projectsByArea[area.id]?.map((project) => (
-                      <DraggableProject key={project.id} project={project} />
+                      <DraggableProject key={project.id} project={project} onComplete={setCompletingProject} />
                     ))}
                     {projectsByArea[area.id]?.length === 0 && (
                       <div className="pv-empty">Drop projects here</div>
@@ -421,7 +423,7 @@ export function ProjectsView() {
                 <DroppableArea area={null}>
                   <div className="pv-projects-list">
                     {projectsByArea['no-area'].map((project) => (
-                      <DraggableProject key={project.id} project={project} />
+                      <DraggableProject key={project.id} project={project} onComplete={setCompletingProject} />
                     ))}
                   </div>
                 </DroppableArea>
@@ -449,6 +451,13 @@ export function ProjectsView() {
           </DragOverlay>
         </DndContext>
       </main>
+
+      {completingProject && (
+        <ProjectCompletionDialog
+          project={completingProject}
+          onClose={() => setCompletingProject(null)}
+        />
+      )}
     </>
   );
 }

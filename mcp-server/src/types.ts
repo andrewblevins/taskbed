@@ -26,6 +26,8 @@ export interface Area {
   createdAt: number;
 }
 
+export type ProjectStatus = 'active' | 'completed' | 'cancelled';
+
 export interface Project {
   id: string;
   name: string;
@@ -33,6 +35,8 @@ export interface Project {
   areaId?: string;
   order?: number;
   createdAt: number;
+  status: ProjectStatus;
+  completedAt?: number;
 }
 
 export interface AttributeDefinition {
