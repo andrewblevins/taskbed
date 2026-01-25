@@ -10,6 +10,7 @@ interface KeyboardShortcutsOptions {
   onEscape?: () => void;
   onUndo?: () => void;
   onRedo?: () => void;
+  onShowHelp?: () => void;
   enabled?: boolean;
 }
 
@@ -27,6 +28,7 @@ export function useKeyboardShortcuts(
     onEscape,
     onUndo,
     onRedo,
+    onShowHelp,
     enabled = true,
   } = options;
 
@@ -122,8 +124,15 @@ export function useKeyboardShortcuts(
         }
         return;
       }
+
+      // ? - Show keyboard shortcuts help
+      if (e.key === '?' && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        e.preventDefault();
+        onShowHelp?.();
+        return;
+      }
     },
-    [enabled, onNewTask, onSearch, onNavigateUp, onNavigateDown, onSelectTask, onToggleComplete, onEscape, onUndo, onRedo, searchInputRef]
+    [enabled, onNewTask, onSearch, onNavigateUp, onNavigateDown, onSelectTask, onToggleComplete, onEscape, onUndo, onRedo, onShowHelp, searchInputRef]
   );
 
   useEffect(() => {

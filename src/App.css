@@ -3564,9 +3564,10 @@ textarea:focus:not(:focus-visible) {
     font-size: 0.9375rem;
   }
 
-  /* Task detail modal - full screen on mobile */
+  /* Task detail modal - slide up from bottom on mobile */
   .task-detail-overlay {
     align-items: flex-end;
+    padding-top: 0;
   }
 
   .task-detail {
@@ -3574,10 +3575,33 @@ textarea:focus:not(:focus-visible) {
     max-height: 90vh;
     border-radius: var(--radius-xl) var(--radius-xl) 0 0;
     margin: 0;
+    animation: slideUpMobile 0.3s ease;
+    display: flex;
+    flex-direction: column;
+  }
+
+  @keyframes slideUpMobile {
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+
+  /* Pull handle indicator */
+  .task-detail::before {
+    content: '';
+    width: 36px;
+    height: 4px;
+    background: var(--color-border);
+    border-radius: 2px;
+    margin: 8px auto 0;
+    flex-shrink: 0;
   }
 
   .task-detail-header {
-    padding: 1.25rem 1rem 0;
+    padding: 0.75rem 1rem 0;
   }
 
   .task-detail-title {
@@ -3587,10 +3611,14 @@ textarea:focus:not(:focus-visible) {
   .task-detail-body {
     padding: 1rem;
     gap: 1rem;
+    overflow-y: auto;
+    flex: 1;
+    -webkit-overflow-scrolling: touch;
   }
 
   .task-detail-footer {
-    padding: 0.75rem 1rem 1.25rem;
+    padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom, 0px));
+    flex-shrink: 0;
   }
 
   /* Projects view */
@@ -3726,9 +3754,22 @@ textarea:focus:not(:focus-visible) {
 
 /* Touch-friendly adjustments */
 @media (hover: none) and (pointer: coarse) {
+  /* Task checkbox - use pseudo-element for larger hit area */
   .task-checkbox {
     width: 24px;
     height: 24px;
+    position: relative;
+  }
+
+  /* Invisible touch target expansion */
+  .task-checkbox::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 44px;
+    height: 44px;
+    transform: translate(-50%, -50%);
   }
 
   .nav-item {
@@ -3737,12 +3778,48 @@ textarea:focus:not(:focus-visible) {
   }
 
   .status-action-btn {
-    min-height: 36px;
-    padding: 0.5rem 0.75rem;
+    min-height: 44px;
+    padding: 0.625rem 1rem;
   }
 
   .task-item {
     padding: 0.875rem 0;
+    min-height: 48px;
+  }
+
+  .task-delete {
+    width: 44px;
+    height: 44px;
+    opacity: 0.5;
+  }
+
+  /* Project completion button */
+  .pv-project-icon {
+    padding: 10px;
+    margin: -10px;
+  }
+
+  /* Restore buttons */
+  .restore-btn {
+    min-height: 44px;
+    padding: 0.75rem 1rem;
+  }
+
+  /* Dialog buttons */
+  .dialog-btn {
+    min-height: 52px;
+  }
+
+  /* Attribute options */
+  .attribute-option {
+    min-height: 40px;
+    padding: 0.5rem 1rem;
+  }
+
+  /* Tag buttons */
+  .tag-option {
+    min-height: 36px;
+    padding: 0.375rem 0.75rem;
   }
 
   /* Prevent hover states on touch */
@@ -3758,6 +3835,10 @@ textarea:focus:not(:focus-visible) {
   .nav-item.active:hover {
     background: var(--color-accent);
     color: white;
+  }
+
+  .pv-project:hover {
+    border-left-color: transparent;
   }
 }
 
@@ -4075,5 +4156,154 @@ textarea:focus:not(:focus-visible) {
   .dialog-btn {
     padding: 14px;
     gap: 12px;
+  }
+}
+
+/* ============================================
+   Keyboard Shortcuts Help Modal
+   ============================================ */
+
+.shortcuts-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  animation: fadeIn 0.15s ease;
+}
+
+.shortcuts-modal {
+  background: var(--color-surface);
+  border-radius: var(--radius-xl);
+  width: 100%;
+  max-width: 420px;
+  max-height: 80vh;
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  animation: slideUp 0.2s ease;
+}
+
+.shortcuts-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.shortcuts-header h2 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--color-text);
+}
+
+.shortcuts-close {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: var(--color-bg);
+  border-radius: var(--radius-sm);
+  font-size: 1.25rem;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.shortcuts-close:hover {
+  background: var(--color-border);
+  color: var(--color-text);
+}
+
+.shortcuts-content {
+  padding: 1.25rem 1.5rem;
+  overflow-y: auto;
+  max-height: calc(80vh - 70px);
+}
+
+.shortcuts-section {
+  margin-bottom: 1.5rem;
+}
+
+.shortcuts-section:last-child {
+  margin-bottom: 0;
+}
+
+.shortcuts-section h3 {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-tertiary);
+  margin: 0 0 0.75rem 0;
+}
+
+.shortcuts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.shortcut-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+}
+
+.shortcut-keys {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.shortcut-keys kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  font-family: inherit;
+  font-weight: 500;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+  box-shadow: 0 1px 0 var(--color-border);
+}
+
+.key-or {
+  font-size: 0.6875rem;
+  color: var(--color-text-tertiary);
+  margin: 0 0.25rem;
+}
+
+.shortcut-description {
+  font-size: 0.875rem;
+  color: var(--color-text);
+}
+
+@media (max-width: 480px) {
+  .shortcuts-modal {
+    margin: 1rem;
+    max-width: calc(100% - 2rem);
+  }
+
+  .shortcuts-header,
+  .shortcuts-content {
+    padding: 1rem;
+  }
+
+  .shortcut-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
   }
 }

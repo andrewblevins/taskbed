@@ -7,6 +7,7 @@ import { ProjectsView } from './components/ProjectsView';
 import { AttributeManager } from './components/AttributeManager';
 import { WeeklyReview } from './components/WeeklyReview';
 import { CompletedView } from './components/CompletedView';
+import { KeyboardShortcutsHelp } from './components/KeyboardShortcutsHelp';
 import { Auth } from './components/Auth';
 import { useStore, useTemporalStore, subscribeToRealtimeUpdates, setCurrentUserId } from './store';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
@@ -263,6 +264,9 @@ function App() {
   // Mobile sidebar state
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  // Keyboard shortcuts help modal
+  const [showShortcutsHelp, setShowShortcutsHelp] = useState(false);
+
   // Task input ref for keyboard shortcuts
   const taskInputRef = useRef<HTMLInputElement>(null);
 
@@ -425,6 +429,10 @@ function App() {
     }
   }, [focusedTaskIndex, visibleTasks, toggleTask]);
 
+  const handleShowHelp = useCallback(() => {
+    setShowShortcutsHelp(true);
+  }, []);
+
   // Set up keyboard shortcuts
   useKeyboardShortcuts(
     {
@@ -436,7 +444,8 @@ function App() {
       onEscape: handleEscape,
       onUndo: handleUndo,
       onRedo: handleRedo,
-      enabled: !reviewInProgress,
+      onShowHelp: handleShowHelp,
+      enabled: !reviewInProgress && !showShortcutsHelp,
     },
     searchInputRef
   );
@@ -697,6 +706,11 @@ function App() {
           onClose={() => setSelectedTaskId(null)}
         />
       )}
+
+      <KeyboardShortcutsHelp
+        isOpen={showShortcutsHelp}
+        onClose={() => setShowShortcutsHelp(false)}
+      />
     </div>
   );
 }

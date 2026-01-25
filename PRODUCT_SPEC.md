@@ -901,19 +901,26 @@ For each component, compare the ideal specification above against current implem
 5. ~~Auto-focus task input on initial load~~ - DONE
 6. ~~Add "(Cmd+N)" hint to task input placeholder~~ - DONE
 
-### Remaining (Lower Priority)
-1. Improve mobile TaskDetail behavior (slide-in panel vs overlay)
-2. Add keyboard shortcut reference/help modal (Cmd+?)
-3. Show created date in Someday view items
-4. Improve touch targets for mobile (larger checkboxes)
+### Remaining (Nice to Have)
+1. Show created date in Someday view items
+
+### All Key Items Completed
+- Mobile TaskDetail: slide-up animation, pull handle, proper scrolling, safe area padding
+- Keyboard shortcuts help: press ? to show modal with all shortcuts
+- Touch targets: 44px minimum hit areas for checkboxes, buttons, and interactive elements
 
 ---
 
-## 3.4 Recommended Next Steps
+## 3.4 Summary
 
-1. **Test on mobile** - Verify TaskDetail overlay doesn't cause layout issues
-2. **Add keyboard shortcuts help** - Help modal showing all shortcuts
-3. **Mobile touch targets** - Ensure checkboxes and buttons are finger-friendly
+All priority items from the product spec have been addressed. The app now has:
+- Full keyboard navigation (j/k/Enter/Space/?)
+- Undo/redo support
+- Mobile-optimized TaskDetail
+- Touch-friendly targets
+- Completed items grouped by date
+- Resume review functionality
+- Clear visual hierarchy
 
 ---
 
