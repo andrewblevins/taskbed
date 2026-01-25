@@ -1,8 +1,8 @@
 import { loadData, updateData } from '../data.js';
 
 // Defer task to Someday/Maybe
-export function deferToSomeday(id: string): string {
-  const state = loadData();
+export async function deferToSomeday(id: string): Promise<string> {
+  const state = await loadData();
   const task = state.tasks.find(t => t.id === id);
 
   if (!task) {
@@ -13,7 +13,7 @@ export function deferToSomeday(id: string): string {
     return `Task "${task.title}" is already in Someday/Maybe.`;
   }
 
-  updateData(s => ({
+  await updateData(s => ({
     ...s,
     tasks: s.tasks.map(t =>
       t.id === id
@@ -31,8 +31,8 @@ export function deferToSomeday(id: string): string {
 }
 
 // Move task to Waiting For
-export function moveToWaiting(id: string, waitingFor: string): string {
-  const state = loadData();
+export async function moveToWaiting(id: string, waitingFor: string): Promise<string> {
+  const state = await loadData();
   const task = state.tasks.find(t => t.id === id);
 
   if (!task) {
@@ -43,7 +43,7 @@ export function moveToWaiting(id: string, waitingFor: string): string {
     return 'Please specify who or what you are waiting for.';
   }
 
-  updateData(s => ({
+  await updateData(s => ({
     ...s,
     tasks: s.tasks.map(t =>
       t.id === id
@@ -61,8 +61,8 @@ export function moveToWaiting(id: string, waitingFor: string): string {
 }
 
 // Activate task (move back to Active)
-export function activateTask(id: string): string {
-  const state = loadData();
+export async function activateTask(id: string): Promise<string> {
+  const state = await loadData();
   const task = state.tasks.find(t => t.id === id);
 
   if (!task) {
@@ -73,7 +73,7 @@ export function activateTask(id: string): string {
     return `Task "${task.title}" is already active.`;
   }
 
-  updateData(s => ({
+  await updateData(s => ({
     ...s,
     tasks: s.tasks.map(t =>
       t.id === id

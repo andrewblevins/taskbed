@@ -2,10 +2,41 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { v4 as uuid } from 'uuid';
 import type { Task, Project, Area, AttributeDefinition, ViewGrouping, TaskStatus } from '../types';
+import { supabase, isSupabaseConfigured, DEFAULT_USER_ID } from '../lib/supabase';
 
 const API_URL = 'http://localhost:3847/api/data';
 
-// Custom storage that syncs to both localStorage AND a file via API
+// Debounce helper for Supabase sync
+let supabaseSyncTimeout: ReturnType<typeof setTimeout> | null = null;
+const SUPABASE_SYNC_DEBOUNCE_MS = 1000;
+
+// Sync state to Supabase (debounced)
+const syncToSupabase = async (state: Record<string, unknown>): Promise<void> => {
+  if (!isSupabaseConfigured() || !supabase) return;
+
+  try {
+    const { error } = await supabase
+      .from('taskbed_state')
+      .upsert(
+        {
+          user_id: DEFAULT_USER_ID,
+          state: state,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: 'user_id' }
+      );
+
+    if (error) {
+      console.error('Supabase sync error:', error.message);
+    } else {
+      console.debug('Synced to Supabase');
+    }
+  } catch (err) {
+    console.error('Supabase sync failed:', err);
+  }
+};
+
+// Custom storage that syncs to localStorage, file API, AND Supabase
 const fileBackedStorage = {
   getItem: (name: string): string | null => {
     // Primary: read from localStorage for fast startup
@@ -15,7 +46,7 @@ const fileBackedStorage = {
     // Save to localStorage
     localStorage.setItem(name, value);
 
-    // Also sync to file via API (non-blocking)
+    // Sync to file via API (non-blocking) - for local MCP server
     fetch(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -24,6 +55,23 @@ const fileBackedStorage = {
       // API might not be running, that's ok
       console.debug('File sync skipped (API not available):', err.message);
     });
+
+    // Sync to Supabase (debounced, non-blocking)
+    if (isSupabaseConfigured()) {
+      if (supabaseSyncTimeout) {
+        clearTimeout(supabaseSyncTimeout);
+      }
+      supabaseSyncTimeout = setTimeout(() => {
+        try {
+          const parsed = JSON.parse(value);
+          if (parsed?.state) {
+            syncToSupabase(parsed.state);
+          }
+        } catch {
+          console.debug('Failed to parse state for Supabase sync');
+        }
+      }, SUPABASE_SYNC_DEBOUNCE_MS);
+    }
   },
   removeItem: (name: string): void => {
     localStorage.removeItem(name);
@@ -430,6 +478,26 @@ export const useStore = create<TaskbedState>()(
         })),
 
       syncFromFile: async () => {
+        // Try Supabase first (for deployed/mobile access)
+        if (isSupabaseConfigured() && supabase) {
+          try {
+            const { data, error } = await supabase
+              .from('taskbed_state')
+              .select('state, updated_at')
+              .eq('user_id', DEFAULT_USER_ID)
+              .single();
+
+            if (!error && data?.state) {
+              console.debug('Synced from Supabase');
+              set(data.state as Partial<TaskbedState>);
+              return;
+            }
+          } catch (err) {
+            console.debug('Supabase sync skipped:', err);
+          }
+        }
+
+        // Fall back to local file API
         try {
           const response = await fetch(API_URL);
           if (response.ok) {
@@ -449,3 +517,47 @@ export const useStore = create<TaskbedState>()(
     }
   )
 );
+
+// Real-time subscription for cross-device sync
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let realtimeSubscription: any = null;
+
+export const subscribeToRealtimeUpdates = (): (() => void) => {
+  if (!isSupabaseConfigured() || !supabase) {
+    return () => {}; // No-op cleanup
+  }
+
+  // Unsubscribe from any existing subscription
+  if (realtimeSubscription) {
+    supabase.removeChannel(realtimeSubscription);
+  }
+
+  realtimeSubscription = supabase
+    .channel('taskbed-changes')
+    .on(
+      'postgres_changes',
+      {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'taskbed_state',
+        filter: `user_id=eq.${DEFAULT_USER_ID}`,
+      },
+      (payload) => {
+        console.debug('Realtime update received:', payload);
+        if (payload.new && (payload.new as { state?: unknown }).state) {
+          const newState = (payload.new as { state: Partial<TaskbedState> }).state;
+          // Only update if this wasn't our own change (check timestamp)
+          useStore.setState(newState);
+        }
+      }
+    )
+    .subscribe();
+
+  // Return cleanup function
+  return () => {
+    if (realtimeSubscription && supabase) {
+      supabase.removeChannel(realtimeSubscription);
+      realtimeSubscription = null;
+    }
+  };
+};

@@ -74,8 +74,56 @@ claude mcp add taskbed node /path/to/taskbed/mcp-server/dist/index.js
 
 See `mcp-server/README.md` for full tool documentation.
 
+## Deployment (Netlify + Supabase)
+
+Taskbed can be deployed to Netlify with Supabase for cloud storage, enabling mobile/cross-device access.
+
+### 1. Create Supabase Project
+
+1. Go to [supabase.com](https://supabase.com) and create a new project
+2. Go to SQL Editor and run the schema in `scripts/supabase-schema.sql`
+3. Go to Project Settings > API to get your URL and keys
+
+### 2. Configure Environment Variables
+
+For local development, create `.env`:
+```bash
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=eyJ...your-anon-key
+```
+
+For the MCP server, create `mcp-server/.env`:
+```bash
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_KEY=eyJ...your-service-role-key
+```
+
+### 3. Migrate Existing Data
+
+```bash
+export SUPABASE_URL=https://your-project.supabase.co
+export SUPABASE_SERVICE_KEY=your-service-key
+npm run migrate:supabase
+```
+
+### 4. Deploy to Netlify
+
+1. Connect your GitHub repo to Netlify
+2. Set build command: `npm run build`
+3. Set publish directory: `dist`
+4. Add environment variables in Netlify dashboard:
+   - `VITE_SUPABASE_URL`
+   - `VITE_SUPABASE_ANON_KEY`
+
+The app will:
+- Use localStorage for fast local access
+- Sync to Supabase for cloud backup and cross-device sync
+- Subscribe to real-time updates for instant sync between devices
+
 ## Tech Stack
 
 - React 19 + TypeScript
-- Zustand (state management with localStorage persist)
+- Zustand (state management with localStorage + Supabase persist)
+- Supabase (PostgreSQL database + real-time sync)
 - Vite
+- Netlify (hosting)

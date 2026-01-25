@@ -36,8 +36,8 @@ function formatTaskList(tasks: Task[], projectMap: Map<string, string>): string 
 }
 
 // Get inbox: active tasks with no project (unprocessed in GTD terms)
-export function getInbox(): string {
-  const state = loadData();
+export async function getInbox(): Promise<string> {
+  const state = await loadData();
   const projectMap = new Map(state.projects.map(p => [p.id, p.name]));
 
   const inbox = state.tasks.filter(
@@ -52,8 +52,8 @@ export function getInbox(): string {
 }
 
 // Get next actions: active tasks, optionally filtered by context tag
-export function getNextActions(tag?: string): string {
-  const state = loadData();
+export async function getNextActions(tag?: string): Promise<string> {
+  const state = await loadData();
   const projectMap = new Map(state.projects.map(p => [p.id, p.name]));
 
   let tasks = state.tasks.filter(t => !t.completed && t.status === 'active');
@@ -71,8 +71,8 @@ export function getNextActions(tag?: string): string {
 }
 
 // Get waiting for list
-export function getWaitingFor(): string {
-  const state = loadData();
+export async function getWaitingFor(): Promise<string> {
+  const state = await loadData();
   const projectMap = new Map(state.projects.map(p => [p.id, p.name]));
 
   const waiting = state.tasks.filter(t => !t.completed && t.status === 'waiting');
@@ -108,8 +108,8 @@ export function getWaitingFor(): string {
 }
 
 // Get someday/maybe list
-export function getSomeday(): string {
-  const state = loadData();
+export async function getSomeday(): Promise<string> {
+  const state = await loadData();
   const projectMap = new Map(state.projects.map(p => [p.id, p.name]));
 
   const someday = state.tasks.filter(t => !t.completed && t.status === 'someday');
@@ -122,8 +122,8 @@ export function getSomeday(): string {
 }
 
 // Get tasks due soon (within N days)
-export function getDueSoon(days: number = 7): string {
-  const state = loadData();
+export async function getDueSoon(days: number = 7): Promise<string> {
+  const state = await loadData();
   const projectMap = new Map(state.projects.map(p => [p.id, p.name]));
 
   const now = Date.now();
@@ -144,8 +144,8 @@ export function getDueSoon(days: number = 7): string {
 }
 
 // Get overdue tasks
-export function getOverdue(): string {
-  const state = loadData();
+export async function getOverdue(): Promise<string> {
+  const state = await loadData();
   const projectMap = new Map(state.projects.map(p => [p.id, p.name]));
 
   const now = Date.now();

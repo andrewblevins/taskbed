@@ -3,8 +3,8 @@ import { loadData, updateData } from '../data.js';
 import type { Project } from '../types.js';
 
 // List all projects
-export function listProjects(): string {
-  const state = loadData();
+export async function listProjects(): Promise<string> {
+  const state = await loadData();
 
   if (state.projects.length === 0) {
     return 'No projects found.';
@@ -19,8 +19,8 @@ export function listProjects(): string {
 }
 
 // Add a new project
-export function addProject(name: string, color?: string): string {
-  const state = loadData();
+export async function addProject(name: string, color?: string): Promise<string> {
+  const state = await loadData();
 
   // Check for duplicate name
   if (state.projects.some(p => p.name.toLowerCase() === name.toLowerCase())) {
@@ -37,7 +37,7 @@ export function addProject(name: string, color?: string): string {
     createdAt: Date.now(),
   };
 
-  updateData(s => ({
+  await updateData(s => ({
     ...s,
     projects: [...s.projects, newProject],
   }));
@@ -46,8 +46,8 @@ export function addProject(name: string, color?: string): string {
 }
 
 // Delete a project
-export function deleteProject(id: string): string {
-  const state = loadData();
+export async function deleteProject(id: string): Promise<string> {
+  const state = await loadData();
 
   // Find project by ID or name
   const project = state.projects.find(
@@ -61,7 +61,7 @@ export function deleteProject(id: string): string {
   // Count affected tasks
   const affectedTasks = state.tasks.filter(t => t.projectId === project.id).length;
 
-  updateData(s => ({
+  await updateData(s => ({
     ...s,
     projects: s.projects.filter(p => p.id !== project.id),
     // Remove project reference from tasks (move to no project)

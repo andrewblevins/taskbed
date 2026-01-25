@@ -36,15 +36,15 @@ function formatTask(task: Task, projectName?: string): string {
 }
 
 // List tasks with optional filters
-export function listTasks(filters: {
+export async function listTasks(filters: {
   status?: TaskStatus;
   project?: string;
   tag?: string;
   completed?: boolean;
   has_due_date?: boolean;
   overdue?: boolean;
-}): string {
-  const state = loadData();
+}): Promise<string> {
+  const state = await loadData();
   let tasks = [...state.tasks];
 
   // Apply filters
@@ -90,8 +90,8 @@ export function listTasks(filters: {
 }
 
 // Get a single task by ID
-export function getTask(id: string): string {
-  const state = loadData();
+export async function getTask(id: string): Promise<string> {
+  const state = await loadData();
   const task = state.tasks.find(t => t.id === id);
 
   if (!task) {
@@ -134,7 +134,7 @@ export function getTask(id: string): string {
 }
 
 // Add a new task
-export function addTask(params: {
+export async function addTask(params: {
   title: string;
   notes?: string;
   project?: string;
@@ -142,8 +142,8 @@ export function addTask(params: {
   status?: TaskStatus;
   due_date?: string;
   energy?: 'high' | 'medium' | 'low';
-}): string {
-  const state = loadData();
+}): Promise<string> {
+  const state = await loadData();
 
   // Resolve project ID
   let projectId: string | undefined;
@@ -186,7 +186,7 @@ export function addTask(params: {
     newTask.dueDate = dueDate;
   }
 
-  updateData(s => ({
+  await updateData(s => ({
     ...s,
     tasks: [...s.tasks, newTask],
     // Auto-add any new tags
@@ -197,7 +197,7 @@ export function addTask(params: {
 }
 
 // Update an existing task
-export function updateTask(params: {
+export async function updateTask(params: {
   id: string;
   title?: string;
   notes?: string;
@@ -207,8 +207,8 @@ export function updateTask(params: {
   due_date?: string | null;
   energy?: 'high' | 'medium' | 'low' | null;
   waiting_for?: string;
-}): string {
-  const state = loadData();
+}): Promise<string> {
+  const state = await loadData();
   const taskIndex = state.tasks.findIndex(t => t.id === params.id);
 
   if (taskIndex === -1) {
@@ -279,7 +279,7 @@ export function updateTask(params: {
     }
   }
 
-  updateData(s => ({
+  await updateData(s => ({
     ...s,
     tasks: s.tasks.map((t, i) => i === taskIndex ? task : t),
     availableTags: [...new Set([...s.availableTags, ...task.tags])],
@@ -289,8 +289,8 @@ export function updateTask(params: {
 }
 
 // Complete a task
-export function completeTask(id: string): string {
-  const state = loadData();
+export async function completeTask(id: string): Promise<string> {
+  const state = await loadData();
   const task = state.tasks.find(t => t.id === id);
 
   if (!task) {
@@ -301,7 +301,7 @@ export function completeTask(id: string): string {
     return `Task "${task.title}" is already completed.`;
   }
 
-  updateData(s => ({
+  await updateData(s => ({
     ...s,
     tasks: s.tasks.map(t =>
       t.id === id
@@ -314,8 +314,8 @@ export function completeTask(id: string): string {
 }
 
 // Uncomplete a task
-export function uncompleteTask(id: string): string {
-  const state = loadData();
+export async function uncompleteTask(id: string): Promise<string> {
+  const state = await loadData();
   const task = state.tasks.find(t => t.id === id);
 
   if (!task) {
@@ -326,7 +326,7 @@ export function uncompleteTask(id: string): string {
     return `Task "${task.title}" is not completed.`;
   }
 
-  updateData(s => ({
+  await updateData(s => ({
     ...s,
     tasks: s.tasks.map(t =>
       t.id === id
@@ -339,15 +339,15 @@ export function uncompleteTask(id: string): string {
 }
 
 // Delete a task
-export function deleteTask(id: string): string {
-  const state = loadData();
+export async function deleteTask(id: string): Promise<string> {
+  const state = await loadData();
   const task = state.tasks.find(t => t.id === id);
 
   if (!task) {
     return `Task not found with ID: ${id}`;
   }
 
-  updateData(s => ({
+  await updateData(s => ({
     ...s,
     tasks: s.tasks.filter(t => t.id !== id),
   }));

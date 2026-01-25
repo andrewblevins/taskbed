@@ -6,7 +6,7 @@ import { TaskDetail } from './components/TaskDetail';
 import { ProjectsView } from './components/ProjectsView';
 import { AttributeManager } from './components/AttributeManager';
 import { WeeklyReview } from './components/WeeklyReview';
-import { useStore } from './store';
+import { useStore, subscribeToRealtimeUpdates } from './store';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import type { Task } from './types';
 import './App.css';
@@ -235,10 +235,16 @@ function App() {
   // Task input ref for keyboard shortcuts
   const taskInputRef = useRef<HTMLInputElement>(null);
 
-  // Sync from file on mount (picks up changes made by AI/external tools)
+  // Sync from file/Supabase on mount (picks up changes made by AI/external tools)
   useEffect(() => {
     syncFromFile();
   }, [syncFromFile]);
+
+  // Subscribe to real-time updates for cross-device sync
+  useEffect(() => {
+    const unsubscribe = subscribeToRealtimeUpdates();
+    return () => unsubscribe();
+  }, []);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const tasks = useStore((s) => s.tasks);
   const projects = useStore((s) => s.projects);

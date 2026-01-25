@@ -1,8 +1,8 @@
 import { loadData, updateData } from '../data.js';
 
 // List available context tags
-export function listTags(): string {
-  const state = loadData();
+export async function listTags(): Promise<string> {
+  const state = await loadData();
 
   if (state.availableTags.length === 0) {
     return 'No context tags defined.';
@@ -27,17 +27,17 @@ export function listTags(): string {
 }
 
 // Add a new context tag
-export function addTag(tag: string): string {
+export async function addTag(tag: string): Promise<string> {
   // Normalize: ensure starts with @
   const normalizedTag = tag.startsWith('@') ? tag : `@${tag}`;
 
-  const state = loadData();
+  const state = await loadData();
 
   if (state.availableTags.includes(normalizedTag)) {
     return `Tag "${normalizedTag}" already exists.`;
   }
 
-  updateData(s => ({
+  await updateData(s => ({
     ...s,
     availableTags: [...s.availableTags, normalizedTag],
   }));

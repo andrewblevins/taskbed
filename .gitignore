@@ -26,3 +26,10 @@ dist-ssr
 # User data (personal tasks)
 data/
 things-import.json
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+mcp-server/.env
+mcp-server/.env.local

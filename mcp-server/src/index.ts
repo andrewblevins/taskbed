@@ -330,81 +330,81 @@ server.setRequestHandler(CallToolRequestSchema, async (request): Promise<CallToo
     switch (name) {
       // Task CRUD
       case 'list_tasks':
-        result = listTasks(args as Parameters<typeof listTasks>[0]);
+        result = await listTasks(args as Parameters<typeof listTasks>[0]);
         break;
       case 'get_task':
-        result = getTask((args as { id: string }).id);
+        result = await getTask((args as { id: string }).id);
         break;
       case 'add_task':
-        result = addTask(args as Parameters<typeof addTask>[0]);
+        result = await addTask(args as Parameters<typeof addTask>[0]);
         break;
       case 'update_task':
-        result = updateTask(args as Parameters<typeof updateTask>[0]);
+        result = await updateTask(args as Parameters<typeof updateTask>[0]);
         break;
       case 'complete_task':
-        result = completeTask((args as { id: string }).id);
+        result = await completeTask((args as { id: string }).id);
         break;
       case 'uncomplete_task':
-        result = uncompleteTask((args as { id: string }).id);
+        result = await uncompleteTask((args as { id: string }).id);
         break;
       case 'delete_task':
-        result = deleteTask((args as { id: string }).id);
+        result = await deleteTask((args as { id: string }).id);
         break;
 
       // GTD Status
       case 'defer_to_someday':
-        result = deferToSomeday((args as { id: string }).id);
+        result = await deferToSomeday((args as { id: string }).id);
         break;
       case 'move_to_waiting':
-        result = moveToWaiting(
+        result = await moveToWaiting(
           (args as { id: string; waiting_for: string }).id,
           (args as { id: string; waiting_for: string }).waiting_for
         );
         break;
       case 'activate_task':
-        result = activateTask((args as { id: string }).id);
+        result = await activateTask((args as { id: string }).id);
         break;
 
       // Projects
       case 'list_projects':
-        result = listProjects();
+        result = await listProjects();
         break;
       case 'add_project':
-        result = addProject(
+        result = await addProject(
           (args as { name: string; color?: string }).name,
           (args as { name: string; color?: string }).color
         );
         break;
       case 'delete_project':
-        result = deleteProject((args as { id: string }).id);
+        result = await deleteProject((args as { id: string }).id);
         break;
 
       // Tags
       case 'list_tags':
-        result = listTags();
+        result = await listTags();
         break;
       case 'add_tag':
-        result = addTag((args as { tag: string }).tag);
+        result = await addTag((args as { tag: string }).tag);
         break;
 
       // GTD Views
       case 'get_inbox':
-        result = getInbox();
+        result = await getInbox();
         break;
       case 'get_next_actions':
-        result = getNextActions((args as { tag?: string }).tag);
+        result = await getNextActions((args as { tag?: string }).tag);
         break;
       case 'get_waiting_for':
-        result = getWaitingFor();
+        result = await getWaitingFor();
         break;
       case 'get_someday':
-        result = getSomeday();
+        result = await getSomeday();
         break;
       case 'get_due_soon':
-        result = getDueSoon((args as { days?: number }).days);
+        result = await getDueSoon((args as { days?: number }).days);
         break;
       case 'get_overdue':
-        result = getOverdue();
+        result = await getOverdue();
         break;
 
       default:
