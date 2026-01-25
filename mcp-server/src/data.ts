@@ -18,13 +18,14 @@ const DATA_FILE = join(__dirname, '..', '..', 'data', 'taskbed.json');
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SERVICE_KEY;
 
+// User ID - set in .env after signing up
+const USER_ID = process.env.USER_ID || 'default';
+
 // Supabase client - only created if credentials are configured
 const supabase: SupabaseClient | null =
   supabaseUrl && supabaseKey
     ? createClient(supabaseUrl, supabaseKey)
     : null;
-
-const DEFAULT_USER_ID = 'default';
 
 // Check if Supabase is configured
 const isSupabaseConfigured = (): boolean => supabase !== null;
@@ -40,7 +41,7 @@ export async function loadData(): Promise<TaskbedState> {
       const { data, error } = await supabase
         .from('taskbed_state')
         .select('state')
-        .eq('user_id', DEFAULT_USER_ID)
+        .eq('user_id', USER_ID)
         .single();
 
       if (!error && data?.state) {
@@ -104,7 +105,7 @@ export async function saveData(state: TaskbedState): Promise<void> {
         .from('taskbed_state')
         .upsert(
           {
-            user_id: DEFAULT_USER_ID,
+            user_id: USER_ID,
             state: state,
             updated_at: new Date().toISOString(),
           },

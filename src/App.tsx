@@ -6,9 +6,12 @@ import { TaskDetail } from './components/TaskDetail';
 import { ProjectsView } from './components/ProjectsView';
 import { AttributeManager } from './components/AttributeManager';
 import { WeeklyReview } from './components/WeeklyReview';
-import { useStore, subscribeToRealtimeUpdates } from './store';
+import { Auth } from './components/Auth';
+import { useStore, subscribeToRealtimeUpdates, setCurrentUserId } from './store';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
+import { getCurrentSession, onAuthStateChange, signOut, isSupabaseConfigured } from './lib/supabase';
 import type { Task } from './types';
+import type { User } from '@supabase/supabase-js';
 import './App.css';
 
 type View = 'tasks' | 'projects' | 'someday' | 'waiting';
@@ -219,6 +222,10 @@ function WaitingView({ onSelectTask }: { onSelectTask: (task: Task) => void }) {
 }
 
 function App() {
+  // Auth state
+  const [user, setUser] = useState<User | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
+
   const [currentView, setCurrentView] = useState<View>('tasks');
   const syncFromFile = useStore((s) => s.syncFromFile);
   const reviewInProgress = useStore((s) => s.reviewInProgress);
@@ -235,16 +242,46 @@ function App() {
   // Task input ref for keyboard shortcuts
   const taskInputRef = useRef<HTMLInputElement>(null);
 
+  // Check auth on mount
+  useEffect(() => {
+    // If Supabase isn't configured, skip auth (local dev mode)
+    if (!isSupabaseConfigured()) {
+      setAuthLoading(false);
+      return;
+    }
+
+    getCurrentSession().then(({ session }) => {
+      if (session?.user) {
+        setUser(session.user);
+        setCurrentUserId(session.user.id);
+      }
+      setAuthLoading(false);
+    });
+
+    // Listen for auth changes
+    const unsubscribe = onAuthStateChange((newUser) => {
+      setUser(newUser);
+      setCurrentUserId(newUser?.id ?? null);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
   // Sync from file/Supabase on mount (picks up changes made by AI/external tools)
   useEffect(() => {
-    syncFromFile();
-  }, [syncFromFile]);
+    // Only sync if authenticated (or Supabase not configured)
+    if (!isSupabaseConfigured() || user) {
+      syncFromFile();
+    }
+  }, [syncFromFile, user]);
 
   // Subscribe to real-time updates for cross-device sync
   useEffect(() => {
+    // Only subscribe if authenticated
+    if (!user) return;
     const unsubscribe = subscribeToRealtimeUpdates();
     return () => unsubscribe();
-  }, []);
+  }, [user]);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const tasks = useStore((s) => s.tasks);
   const projects = useStore((s) => s.projects);
@@ -351,10 +388,31 @@ function App() {
     searchInputRef
   );
 
+  // Loading auth state
+  if (authLoading) {
+    return (
+      <div className="auth-container">
+        <div className="auth-box">
+          <h1>Taskbed</h1>
+          <p>Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Auth gate - show login if Supabase is configured but user not logged in
+  if (isSupabaseConfigured() && !user) {
+    return <Auth onAuthSuccess={() => {}} />;
+  }
+
   // Full-screen review mode
   if (reviewInProgress) {
     return <WeeklyReview />;
   }
+
+  const handleLogout = async () => {
+    await signOut();
+  };
 
   return (
     <div className="app">
@@ -476,6 +534,11 @@ function App() {
         </div>
         <div className="sidebar-footer">
           <AttributeManager />
+          {user && (
+            <button className="logout-button" onClick={handleLogout}>
+              Sign Out
+            </button>
+          )}
         </div>
       </nav>
 

@@ -2,9 +2,20 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { v4 as uuid } from 'uuid';
 import type { Task, Project, Area, AttributeDefinition, ViewGrouping, TaskStatus } from '../types';
-import { supabase, isSupabaseConfigured, DEFAULT_USER_ID } from '../lib/supabase';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
 const API_URL = 'http://localhost:3847/api/data';
+
+// Current authenticated user ID - set by App on auth
+let currentUserId: string | null = null;
+
+export function setCurrentUserId(userId: string | null) {
+  currentUserId = userId;
+}
+
+export function getCurrentUserId(): string | null {
+  return currentUserId;
+}
 
 // Debounce helper for Supabase sync
 let supabaseSyncTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -12,14 +23,14 @@ const SUPABASE_SYNC_DEBOUNCE_MS = 1000;
 
 // Sync state to Supabase (debounced)
 const syncToSupabase = async (state: Record<string, unknown>): Promise<void> => {
-  if (!isSupabaseConfigured() || !supabase) return;
+  if (!isSupabaseConfigured() || !supabase || !currentUserId) return;
 
   try {
     const { error } = await supabase
       .from('taskbed_state')
       .upsert(
         {
-          user_id: DEFAULT_USER_ID,
+          user_id: currentUserId,
           state: state,
           updated_at: new Date().toISOString(),
         },
@@ -479,12 +490,12 @@ export const useStore = create<TaskbedState>()(
 
       syncFromFile: async () => {
         // Try Supabase first (for deployed/mobile access)
-        if (isSupabaseConfigured() && supabase) {
+        if (isSupabaseConfigured() && supabase && currentUserId) {
           try {
             const { data, error } = await supabase
               .from('taskbed_state')
               .select('state, updated_at')
-              .eq('user_id', DEFAULT_USER_ID)
+              .eq('user_id', currentUserId)
               .single();
 
             if (!error && data?.state) {
@@ -523,7 +534,7 @@ export const useStore = create<TaskbedState>()(
 let realtimeSubscription: any = null;
 
 export const subscribeToRealtimeUpdates = (): (() => void) => {
-  if (!isSupabaseConfigured() || !supabase) {
+  if (!isSupabaseConfigured() || !supabase || !currentUserId) {
     return () => {}; // No-op cleanup
   }
 
@@ -540,7 +551,7 @@ export const subscribeToRealtimeUpdates = (): (() => void) => {
         event: 'UPDATE',
         schema: 'public',
         table: 'taskbed_state',
-        filter: `user_id=eq.${DEFAULT_USER_ID}`,
+        filter: `user_id=eq.${currentUserId}`,
       },
       (payload) => {
         console.debug('Realtime update received:', payload);
