@@ -64,45 +64,6 @@ function SearchResultItem({
   );
 }
 
-// Count badges for sidebar
-function TasksCount() {
-  const tasks = useStore((s) => s.tasks);
-  const count = tasks.filter((t) => !t.completed && (t.status === 'active' || !t.status)).length;
-  if (count === 0) return null;
-  return <span className="nav-count">{count}</span>;
-}
-
-function ProjectsCount() {
-  const projects = useStore((s) => s.projects);
-  const count = projects.filter((p) => p.status === 'active' || !p.status).length;
-  if (count === 0) return null;
-  return <span className="nav-count">{count}</span>;
-}
-
-function SomedayCount() {
-  const tasks = useStore((s) => s.tasks);
-  const projects = useStore((s) => s.projects);
-  const count = tasks.filter((t) => !t.completed && t.status === 'someday').length +
-                projects.filter((p) => p.status === 'someday').length;
-  if (count === 0) return null;
-  return <span className="nav-count">{count}</span>;
-}
-
-function WaitingCount() {
-  const tasks = useStore((s) => s.tasks);
-  const count = tasks.filter((t) => !t.completed && t.status === 'waiting').length;
-  if (count === 0) return null;
-  return <span className="nav-count">{count}</span>;
-}
-
-function CompletedCount() {
-  const tasks = useStore((s) => s.tasks);
-  const projects = useStore((s) => s.projects);
-  const count = tasks.filter((t) => t.completed).length +
-                projects.filter((p) => p.status === 'completed' || p.status === 'cancelled').length;
-  if (count === 0) return null;
-  return <span className="nav-count">{count}</span>;
-}
 
 // Helper to format "waiting since" duration
 function formatWaitingDuration(since: number): string {
@@ -566,7 +527,6 @@ function App() {
               <path d="M6 9l2 2 4-4" />
             </svg>
             Tasks
-            <TasksCount />
           </button>
           <button
             className={`nav-item ${currentView === 'projects' ? 'active' : ''}`}
@@ -577,7 +537,6 @@ function App() {
               <path d="M3 7h12" />
             </svg>
             Projects
-            <ProjectsCount />
           </button>
 
           <div className="nav-divider" />
@@ -591,7 +550,6 @@ function App() {
               <path d="M9 5v4l3 2" />
             </svg>
             Someday
-            <SomedayCount />
           </button>
           <button
             className={`nav-item ${currentView === 'waiting' ? 'active' : ''}`}
@@ -602,7 +560,6 @@ function App() {
               <path d="M6 9h6" />
             </svg>
             Waiting For
-            <WaitingCount />
           </button>
 
           <button
@@ -613,7 +570,6 @@ function App() {
               <path d="M4 9l4 4L14 5" />
             </svg>
             Completed
-            <CompletedCount />
           </button>
 
           {reviewStep > 0 ? (
