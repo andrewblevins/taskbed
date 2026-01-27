@@ -272,12 +272,12 @@ export function InboxView({ onSelectTask }: InboxViewProps) {
                   onClick={() => onSelectTask?.(task)}
                 >
                   <button
-                    className="inbox-item-checkbox"
+                    className="task-checkbox"
                     onClick={(e) => { e.stopPropagation(); toggleTask(task.id); }}
                     aria-label="Complete task"
                   >
-                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="2">
-                      <circle cx="9" cy="9" r="7" />
+                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                      <circle cx="9" cy="9" r="7" stroke="currentColor" strokeWidth="2" className="checkbox-circle" />
                     </svg>
                   </button>
                   <span className="inbox-item-title">{task.title}</span>

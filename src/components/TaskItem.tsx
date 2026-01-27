@@ -56,7 +56,12 @@ export function TaskItem({ task, onSelect, isFocused }: TaskItemProps) {
         }}
         aria-label={task.completed ? 'Mark incomplete' : 'Mark complete'}
       >
-        {task.completed && <span>✓</span>}
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <circle cx="9" cy="9" r="7" stroke="currentColor" strokeWidth="2" className="checkbox-circle" />
+          {task.completed && (
+            <path d="M5.5 9.5L8 12L12.5 6.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="checkbox-check" />
+          )}
+        </svg>
       </button>
       <div className="task-content">
         <span className={`task-title ${task.completed ? 'completed' : ''}`}>
