@@ -111,7 +111,14 @@ interface TaskbedState {
   exitReview: () => void;
 
   // Task actions
-  addTask: (title: string, projectId?: string, status?: TaskStatus) => void;
+  addTask: (title: string, options?: {
+    projectId?: string;
+    status?: TaskStatus;
+    notes?: string;
+    tags?: string[];
+    dueDate?: number;
+    attributes?: Record<string, string>;
+  }) => void;
   updateTask: (id: string, updates: Partial<Task>) => void;
   deleteTask: (id: string) => void;
   toggleTask: (id: string) => void;
@@ -194,7 +201,7 @@ export const useStore = create<TaskbedState>()(
       prevReviewStep: () => set((state) => ({ reviewStep: Math.max(0, state.reviewStep - 1) })),
       exitReview: () => set({ reviewInProgress: false }),
 
-      addTask: (title, projectId, status = 'active') =>
+      addTask: (title, options = {}) =>
         set((state) => ({
           tasks: [
             ...state.tasks,
@@ -202,10 +209,12 @@ export const useStore = create<TaskbedState>()(
               id: uuid(),
               title,
               completed: false,
-              status,
-              projectId,
-              attributes: {},
-              tags: [],
+              status: options.status ?? 'active',
+              projectId: options.projectId,
+              notes: options.notes,
+              tags: options.tags ?? [],
+              dueDate: options.dueDate,
+              attributes: options.attributes ?? {},
               createdAt: Date.now(),
             },
           ],

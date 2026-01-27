@@ -294,7 +294,7 @@ function ReviewProjects({ onNext, onPrev }: { onNext: () => void; onPrev: () => 
   const handleAddTask = (projectId: string) => {
     const title = newTaskInputs[projectId]?.trim();
     if (title) {
-      addTask(title, projectId);
+      addTask(title, { projectId });
       setNewTaskInputs({ ...newTaskInputs, [projectId]: '' });
     }
   };

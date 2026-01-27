@@ -7,6 +7,7 @@ import { ProjectsView } from './components/ProjectsView';
 import { AttributeManager } from './components/AttributeManager';
 import { WeeklyReview } from './components/WeeklyReview';
 import { CompletedView } from './components/CompletedView';
+import { InboxView } from './components/InboxView';
 import { KeyboardShortcutsHelp } from './components/KeyboardShortcutsHelp';
 import { Auth } from './components/Auth';
 import { useStore, useTemporalStore, subscribeToRealtimeUpdates, setCurrentUserId } from './store';
@@ -16,7 +17,29 @@ import type { Task } from './types';
 import type { User } from '@supabase/supabase-js';
 import './App.css';
 
-type View = 'tasks' | 'projects' | 'someday' | 'waiting' | 'completed';
+type View = 'inbox' | 'tasks' | 'projects' | 'someday' | 'waiting' | 'completed';
+
+const HASH_TO_VIEW: Record<string, View> = {
+  '#/inbox': 'inbox',
+  '#/tasks': 'tasks',
+  '#/projects': 'projects',
+  '#/someday': 'someday',
+  '#/waiting': 'waiting',
+  '#/completed': 'completed',
+};
+
+const VIEW_TO_HASH: Record<View, string> = {
+  inbox: '#/inbox',
+  tasks: '#/tasks',
+  projects: '#/projects',
+  someday: '#/someday',
+  waiting: '#/waiting',
+  completed: '#/completed',
+};
+
+function getViewFromHash(): View {
+  return HASH_TO_VIEW[window.location.hash] ?? 'tasks';
+}
 
 // Search result item with highlighted matches
 function SearchResultItem({
@@ -217,7 +240,21 @@ function App() {
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(isSupabaseConfigured());
 
-  const [currentView, setCurrentView] = useState<View>('tasks');
+  const [currentView, setCurrentViewState] = useState<View>(getViewFromHash);
+
+  const setCurrentView = useCallback((view: View) => {
+    setCurrentViewState(view);
+    window.location.hash = VIEW_TO_HASH[view];
+  }, []);
+
+  // Sync view state with browser back/forward
+  useEffect(() => {
+    const handleHashChange = () => {
+      setCurrentViewState(getViewFromHash());
+    };
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
   const syncFromFile = useStore((s) => s.syncFromFile);
   const reviewInProgress = useStore((s) => s.reviewInProgress);
   const reviewStep = useStore((s) => s.reviewStep);
@@ -351,8 +388,10 @@ function App() {
   const handleNewTask = useCallback(() => {
     if (currentView === 'tasks') {
       taskInputRef.current?.focus();
+    } else {
+      setCurrentView('inbox');
     }
-  }, [currentView]);
+  }, [currentView, setCurrentView]);
 
   const handleNavigateUp = useCallback(() => {
     if (currentView === 'tasks' && visibleTasks.length > 0) {
@@ -519,6 +558,18 @@ function App() {
         </div>
         <div className="sidebar-nav">
           <button
+            className={`nav-item ${currentView === 'inbox' ? 'active' : ''}`}
+            onClick={() => handleViewChange('inbox')}
+          >
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M3 9h12M9 3v12" />
+            </svg>
+            Inbox
+          </button>
+
+          <div className="nav-divider" />
+
+          <button
             className={`nav-item ${currentView === 'tasks' ? 'active' : ''}`}
             onClick={() => handleViewChange('tasks')}
           >
@@ -645,6 +696,10 @@ function App() {
 
       {/* Main Content */}
       <div className="main-content">
+        {currentView === 'inbox' && (
+          <InboxView />
+        )}
+
         {currentView === 'tasks' && (
           <>
             <header className="content-header">

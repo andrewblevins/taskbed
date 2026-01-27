@@ -4309,3 +4309,223 @@ textarea:focus:not(:focus-visible) {
     gap: 0.25rem;
   }
 }
+
+
+/* ==========================================
+   INBOX VIEW STYLES
+   ========================================== */
+
+.inbox-container {
+  max-width: 540px;
+  margin: 0 auto;
+}
+
+.inbox-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.inbox-title-section {
+  margin-bottom: 0.5rem;
+}
+
+.inbox-title-input {
+  width: 100%;
+  padding: 1.25rem 1.5rem;
+  font-size: 1.125rem;
+  font-weight: 500;
+  border: none;
+  border-radius: 12px;
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm), inset 0 0 0 1px var(--color-border-light);
+  outline: none;
+  transition: all 0.2s ease;
+  color: var(--color-text);
+  font-family: inherit;
+}
+
+.inbox-title-input:hover {
+  box-shadow: var(--shadow-md), inset 0 0 0 1px var(--color-border);
+}
+
+.inbox-title-input:focus {
+  box-shadow: var(--shadow-md), inset 0 0 0 2px var(--color-accent);
+}
+
+.inbox-title-input::placeholder {
+  color: var(--color-text-tertiary);
+  font-weight: 400;
+}
+
+.inbox-toggle-details {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-accent);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.inbox-toggle-details:hover {
+  color: var(--color-accent-hover, #005ec4);
+}
+
+.inbox-details {
+  background: var(--color-surface);
+  border-radius: 12px;
+  padding: 1.25rem;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  animation: fadeIn 0.15s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.inbox-field label {
+  display: block;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+}
+
+.inbox-field select,
+.inbox-field textarea {
+  width: 100%;
+  padding: 0.625rem 1rem;
+  font-size: 0.9375rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md, 8px);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-family: inherit;
+  transition: all 0.15s ease;
+}
+
+.inbox-field .due-date-input {
+  width: 100%;
+  padding: 0.625rem 1rem;
+  font-size: 0.9375rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md, 8px);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-family: inherit;
+  transition: all 0.15s ease;
+}
+
+.inbox-field select:focus,
+.inbox-field textarea:focus,
+.inbox-field .due-date-input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+}
+
+.inbox-field textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.inbox-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  align-items: center;
+}
+
+.inbox-tags .tag-option.selected {
+  background: var(--color-accent);
+  color: white;
+  border-color: var(--color-accent);
+}
+
+.inbox-tags input {
+  flex: 1;
+  min-width: 100px;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.8125rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md, 8px);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-family: inherit;
+}
+
+.inbox-tags input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+.inbox-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.inbox-save-btn {
+  padding: 0.75rem 1.5rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  background: var(--color-accent);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md, 8px);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.inbox-save-btn:hover:not(:disabled) {
+  background: var(--color-accent-hover, #005ec4);
+}
+
+.inbox-save-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.inbox-saved-indicator {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-low, #34c759);
+  animation: fadeIn 0.15s ease;
+}
+
+/* Inbox mobile responsive */
+@media (max-width: 768px) {
+  .inbox-title-input {
+    padding: 1rem 1.25rem;
+    font-size: 1rem;
+  }
+
+  .inbox-details {
+    padding: 1rem;
+  }
+
+  .inbox-save-btn {
+    width: 100%;
+  }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .inbox-save-btn {
+    min-height: 48px;
+  }
+
+  .inbox-toggle-details {
+    min-height: 44px;
+  }
+}
