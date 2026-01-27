@@ -623,7 +623,7 @@ function ReviewWaitingFor({ onNext, onPrev }: { onNext: () => void; onPrev: () =
     <div className="review-step">
       <h2>Review Waiting For</h2>
       <p className="review-prompt">
-        Check on items you're waiting for from others. Did you receive a response? Need to follow up?
+        Check on items you're waiting for. Did you receive a response? Need to follow up?
       </p>
 
       {sortedTasks.length === 0 ? (
@@ -640,7 +640,7 @@ function ReviewWaitingFor({ onNext, onPrev }: { onNext: () => void; onPrev: () =
               <div key={task.id} className="waiting-review-item">
                 <div className="waiting-review-header">
                   <span className="waiting-for-badge">
-                    Waiting for <strong>{task.waitingFor || 'someone'}</strong>
+                    Waiting for <strong>{task.waitingFor || 'something'}</strong>
                   </span>
                   <span className={`waiting-age ${isOverdue ? 'overdue' : ''}`}>
                     {task.waitingSince ? formatWaitingDuration(task.waitingSince) : ''}

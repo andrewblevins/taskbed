@@ -262,7 +262,7 @@ export function TaskDetail({ task, onClose }: TaskDetailProps) {
               <span className={`status-badge status-${currentStatus}`}>
                 {currentStatus === 'active' && 'Active'}
                 {currentStatus === 'someday' && 'Someday / Maybe'}
-                {currentStatus === 'waiting' && `Waiting for ${task.waitingFor || 'someone'}`}
+                {currentStatus === 'waiting' && `Waiting for ${task.waitingFor || 'something'}`}
               </span>
 
               {currentStatus !== 'active' && (
@@ -294,13 +294,13 @@ export function TaskDetail({ task, onClose }: TaskDetailProps) {
           {/* Waiting Prompt */}
           {showWaitingPrompt && (
             <div className="waiting-prompt">
-              <label>Who are you waiting for?</label>
+              <label>What are you waiting for?</label>
               <div className="waiting-prompt-input">
                 <input
                   type="text"
                   value={waitingFor}
                   onChange={(e) => setWaitingFor(e.target.value)}
-                  placeholder="e.g., John, Client, Vendor"
+                  placeholder="e.g., response from client, package delivery, approval"
                   autoFocus
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') handleMoveToWaiting();

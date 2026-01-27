@@ -13,7 +13,7 @@ export interface Task {
   completedAt?: number;
   order?: number; // for sorting within groups
   // Waiting-specific fields
-  waitingFor?: string; // who you're waiting on (person/entity name)
+  waitingFor?: string; // what you're waiting on
   waitingSince?: number; // when it was moved to waiting
   // Area (optional - for organizing without a project)
   areaId?: string;

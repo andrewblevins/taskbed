@@ -181,7 +181,7 @@ function WaitingView({ onSelectTask }: { onSelectTask: (task: Task) => void }) {
       <main className="content-body">
         {sortedTasks.length === 0 ? (
           <div className="empty-state">
-            <p>Nothing pending from others. Tasks you're waiting on will appear here.</p>
+            <p>Nothing pending. Tasks you're waiting on will appear here.</p>
           </div>
         ) : (
           <div className="status-task-list">
@@ -196,7 +196,7 @@ function WaitingView({ onSelectTask }: { onSelectTask: (task: Task) => void }) {
                   <div className="status-task-content">
                     <div className="waiting-header">
                       <span className="waiting-for-label">
-                        Waiting for <strong>{task.waitingFor || 'someone'}</strong>
+                        Waiting for <strong>{task.waitingFor || 'something'}</strong>
                       </span>
                       <span className={`waiting-duration ${isOverdue ? 'overdue' : ''}`}>
                         {task.waitingSince ? formatWaitingDuration(task.waitingSince) : ''}
