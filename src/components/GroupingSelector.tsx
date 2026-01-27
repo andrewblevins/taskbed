@@ -4,7 +4,9 @@ export function GroupingSelector() {
   const { attributes, currentGrouping, setGrouping } = useStore();
 
   const currentId =
-    'attributeId' in currentGrouping ? currentGrouping.attributeId : 'none';
+    'attributeId' in currentGrouping
+      ? currentGrouping.attributeId
+      : 'type' in currentGrouping ? currentGrouping.type : 'none';
 
   return (
     <div className="grouping-selector">
@@ -17,6 +19,8 @@ export function GroupingSelector() {
             setGrouping({ type: 'none' });
           } else if (value === 'project') {
             setGrouping({ type: 'project' });
+          } else if (value === 'area') {
+            setGrouping({ type: 'area' });
           } else {
             setGrouping({ attributeId: value });
           }
@@ -24,6 +28,7 @@ export function GroupingSelector() {
       >
         <option value="none">None</option>
         <option value="project">Project</option>
+        <option value="area">Area</option>
         {attributes.map((attr) => (
           <option key={attr.id} value={attr.id}>
             {attr.name}

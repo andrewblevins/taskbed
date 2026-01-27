@@ -16,6 +16,7 @@ export interface Task {
   order?: number;
   waitingFor?: string;
   waitingSince?: number;
+  areaId?: string;
   dueDate?: number;
 }
 

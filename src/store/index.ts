@@ -113,6 +113,7 @@ interface TaskbedState {
   // Task actions
   addTask: (title: string, options?: {
     projectId?: string;
+    areaId?: string;
     status?: TaskStatus;
     notes?: string;
     tags?: string[];
@@ -125,6 +126,7 @@ interface TaskbedState {
   reorderTasks: (taskIds: string[]) => void;
   moveTaskToAttributeGroup: (taskId: string, attributeId: string, value: string, newIndex: number) => void;
   moveTaskToProject: (taskId: string, projectId: string | undefined, newIndex: number) => void;
+  moveTaskToArea: (taskId: string, areaId: string | undefined, newIndex: number) => void;
   // Status actions
   setTaskStatus: (id: string, status: TaskStatus) => void;
   moveToWaiting: (id: string, waitingFor: string) => void;
@@ -211,6 +213,7 @@ export const useStore = create<TaskbedState>()(
               completed: false,
               status: options.status ?? 'active',
               projectId: options.projectId,
+              areaId: options.areaId,
               notes: options.notes,
               tags: options.tags ?? [],
               dueDate: options.dueDate,
@@ -286,6 +289,20 @@ export const useStore = create<TaskbedState>()(
           const otherTasks = state.tasks.filter((t) => t.id !== taskId);
 
           // Insert at new position
+          const newTasks = [...otherTasks];
+          newTasks.splice(newIndex, 0, updatedTask);
+
+          return { tasks: newTasks };
+        }),
+
+      moveTaskToArea: (taskId, areaId, newIndex) =>
+        set((state) => {
+          const task = state.tasks.find((t) => t.id === taskId);
+          if (!task) return state;
+
+          const updatedTask = { ...task, areaId };
+          const otherTasks = state.tasks.filter((t) => t.id !== taskId);
+
           const newTasks = [...otherTasks];
           newTasks.splice(newIndex, 0, updatedTask);
 

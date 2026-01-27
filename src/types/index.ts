@@ -15,6 +15,8 @@ export interface Task {
   // Waiting-specific fields
   waitingFor?: string; // who you're waiting on (person/entity name)
   waitingSince?: number; // when it was moved to waiting
+  // Area (optional - for organizing without a project)
+  areaId?: string;
   // Due date (optional - GTD says only use for hard deadlines)
   dueDate?: number; // timestamp of the due date
 }
@@ -55,6 +57,8 @@ export type ViewGrouping = {
   attributeId: string; // which attribute to group by
 } | {
   type: 'project';
+} | {
+  type: 'area';
 } | {
   type: 'none';
 };

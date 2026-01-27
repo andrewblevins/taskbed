@@ -12,6 +12,7 @@ export function TaskDetail({ task, onClose }: TaskDetailProps) {
     updateTask,
     deleteTask,
     projects,
+    areas,
     attributes,
     setTaskStatus,
     moveToWaiting,
@@ -56,6 +57,10 @@ export function TaskDetail({ task, onClose }: TaskDetailProps) {
 
   const handleProjectChange = (projectId: string) => {
     updateTask(task.id, { projectId: projectId || undefined });
+  };
+
+  const handleAreaChange = (areaId: string) => {
+    updateTask(task.id, { areaId: areaId || undefined });
   };
 
   const handleDelete = () => {
@@ -123,6 +128,21 @@ export function TaskDetail({ task, onClose }: TaskDetailProps) {
               {projects.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="task-detail-field">
+            <label>Area</label>
+            <select
+              value={task.areaId || ''}
+              onChange={(e) => handleAreaChange(e.target.value)}
+            >
+              <option value="">No area</option>
+              {areas.map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.name}
                 </option>
               ))}
             </select>

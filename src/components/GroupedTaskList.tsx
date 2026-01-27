@@ -30,10 +30,12 @@ export function GroupedTaskList({ onSelectTask, focusedTaskId }: GroupedTaskList
     tasks,
     attributes,
     projects,
+    areas,
     currentGrouping,
     reorderTasks,
     moveTaskToAttributeGroup,
     moveTaskToProject,
+    moveTaskToArea,
     selectedTagFilter,
   } = useStore();
 
@@ -101,6 +103,18 @@ export function GroupedTaskList({ onSelectTask, focusedTaskId }: GroupedTaskList
           groupId === 'unset' ? undefined : groupId,
           targetTasks.length
         );
+      } else if ('type' in currentGrouping && currentGrouping.type === 'area') {
+        // Moving to an area group
+        const resolveAreaId = (t: Task) => t.areaId || (t.projectId ? projects.find(p => p.id === t.projectId)?.areaId : undefined);
+        const targetTasks = incompleteTasks.filter((t) => {
+          const taskAreaId = resolveAreaId(t);
+          return groupId === 'unset' ? !taskAreaId : taskAreaId === groupId;
+        });
+        moveTaskToArea(
+          activeTaskId,
+          groupId === 'unset' ? undefined : groupId,
+          targetTasks.length
+        );
       }
       return;
     }
@@ -146,6 +160,23 @@ export function GroupedTaskList({ onSelectTask, focusedTaskId }: GroupedTaskList
         moveTaskToProject(
           activeTaskId,
           overTask.projectId,
+          overIndex >= 0 ? overIndex : targetGroupTasks.length
+        );
+        return;
+      }
+    } else if ('type' in currentGrouping && currentGrouping.type === 'area') {
+      const resolveAreaId = (t: Task) => t.areaId || (t.projectId ? projects.find(p => p.id === t.projectId)?.areaId : undefined);
+      const activeAreaId = resolveAreaId(activeTask) || '';
+      const overAreaId = resolveAreaId(overTask) || '';
+
+      if (activeAreaId !== overAreaId) {
+        const targetGroupTasks = incompleteTasks.filter(
+          (t) => (resolveAreaId(t) || '') === overAreaId
+        );
+        const overIndex = targetGroupTasks.findIndex((t) => t.id === overId);
+        moveTaskToArea(
+          activeTaskId,
+          overAreaId || undefined,
           overIndex >= 0 ? overIndex : targetGroupTasks.length
         );
         return;
@@ -216,6 +247,81 @@ export function GroupedTaskList({ onSelectTask, focusedTaskId }: GroupedTaskList
               <div className="task-group">
                 <h3 className="group-header unset droppable" data-group-id="unset">
                   No Project
+                  <span className="group-count">{groups['unset'].length}</span>
+                </h3>
+                <div className="group-tasks">
+                  {groups['unset'].map((task) => (
+                    <DraggableTask key={task.id} task={task} onSelect={onSelectTask} isFocused={focusedTaskId === task.id} />
+                  ))}
+                </div>
+              </div>
+            )}
+          </SortableContext>
+        </div>
+        <DragOverlay>
+          {activeTask ? (
+            <div className="drag-overlay">
+              <TaskItem task={activeTask} onSelect={() => {}} />
+            </div>
+          ) : null}
+        </DragOverlay>
+      </DndContext>
+    );
+  }
+
+  // Group by area
+  if ('type' in currentGrouping && currentGrouping.type === 'area') {
+    const resolveAreaId = (t: Task) => t.areaId || (t.projectId ? projects.find(p => p.id === t.projectId)?.areaId : undefined);
+
+    const groups: Record<string, Task[]> = {};
+    areas.forEach((a) => {
+      groups[a.id] = [];
+    });
+    groups['unset'] = [];
+
+    incompleteTasks.forEach((task) => {
+      const areaId = resolveAreaId(task);
+      if (areaId && groups[areaId]) {
+        groups[areaId].push(task);
+      } else {
+        groups['unset'].push(task);
+      }
+    });
+
+    const allTaskIds = incompleteTasks.map((t) => t.id);
+
+    return (
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+      >
+        <div className="grouped-list">
+          <SortableContext items={allTaskIds} strategy={verticalListSortingStrategy}>
+            {areas.map(
+              (area) =>
+                groups[area.id].length > 0 && (
+                  <div key={area.id} className="task-group">
+                    <h3
+                      className="group-header droppable"
+                      data-group-id={area.id}
+                    >
+                      {area.name}
+                      <span className="group-count">{groups[area.id].length}</span>
+                    </h3>
+                    <div className="group-tasks">
+                      {groups[area.id].map((task) => (
+                        <DraggableTask key={task.id} task={task} onSelect={onSelectTask} isFocused={focusedTaskId === task.id} />
+                      ))}
+                    </div>
+                  </div>
+                )
+            )}
+            {groups['unset'].length > 0 && (
+              <div className="task-group">
+                <h3 className="group-header unset droppable" data-group-id="unset">
+                  No Area
                   <span className="group-count">{groups['unset'].length}</span>
                 </h3>
                 <div className="group-tasks">

@@ -10,6 +10,7 @@ export function InboxView({ onSelectTask }: InboxViewProps) {
   const {
     addTask,
     projects,
+    areas,
     attributes,
     availableTags,
     addTag,
@@ -20,6 +21,7 @@ export function InboxView({ onSelectTask }: InboxViewProps) {
   const [title, setTitle] = useState('');
   const [showDetails, setShowDetails] = useState(false);
   const [projectId, setProjectId] = useState('');
+  const [areaId, setAreaId] = useState('');
   const [notes, setNotes] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [dueDate, setDueDate] = useState('');
@@ -45,6 +47,7 @@ export function InboxView({ onSelectTask }: InboxViewProps) {
     setTitle('');
     setShowDetails(false);
     setProjectId('');
+    setAreaId('');
     setNotes('');
     setSelectedTags([]);
     setDueDate('');
@@ -59,6 +62,7 @@ export function InboxView({ onSelectTask }: InboxViewProps) {
 
     const options: Parameters<typeof addTask>[1] = {};
     if (projectId) options.projectId = projectId;
+    if (areaId) options.areaId = areaId;
     if (notes.trim()) options.notes = notes.trim();
     if (selectedTags.length > 0) options.tags = selectedTags;
     if (dueDate) {
@@ -106,12 +110,13 @@ export function InboxView({ onSelectTask }: InboxViewProps) {
 
   const activeProjects = projects.filter(p => p.status === 'active');
 
-  // Inbox items: active, not completed, no project assigned
+  // Inbox items: active, not completed, no project and no area assigned
   const inboxItems = useMemo(() =>
     tasks.filter(t =>
       !t.completed &&
       (t.status === 'active' || !t.status) &&
-      !t.projectId
+      !t.projectId &&
+      !t.areaId
     ).sort((a, b) => b.createdAt - a.createdAt),
     [tasks]
   );
@@ -169,6 +174,16 @@ export function InboxView({ onSelectTask }: InboxViewProps) {
                     <option value="">No project</option>
                     {activeProjects.map((p) => (
                       <option key={p.id} value={p.id}>{p.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="inbox-field">
+                  <label>Area</label>
+                  <select value={areaId} onChange={(e) => setAreaId(e.target.value)}>
+                    <option value="">No area</option>
+                    {areas.map((a) => (
+                      <option key={a.id} value={a.id}>{a.name}</option>
                     ))}
                   </select>
                 </div>
