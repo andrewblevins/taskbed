@@ -1,13 +1,20 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { useStore } from '../store';
+import type { Task } from '../types';
 
-export function InboxView() {
+interface InboxViewProps {
+  onSelectTask?: (task: Task) => void;
+}
+
+export function InboxView({ onSelectTask }: InboxViewProps) {
   const {
     addTask,
     projects,
     attributes,
     availableTags,
     addTag,
+    tasks,
+    toggleTask,
   } = useStore();
 
   const [title, setTitle] = useState('');
@@ -99,11 +106,21 @@ export function InboxView() {
 
   const activeProjects = projects.filter(p => p.status === 'active');
 
+  // Inbox items: active, not completed, no project assigned
+  const inboxItems = useMemo(() =>
+    tasks.filter(t =>
+      !t.completed &&
+      (t.status === 'active' || !t.status) &&
+      !t.projectId
+    ).sort((a, b) => b.createdAt - a.createdAt),
+    [tasks]
+  );
+
   return (
     <>
       <header className="content-header">
         <h2>Inbox</h2>
-        <span className="header-count">Quick Capture</span>
+        <span className="header-count">{inboxItems.length} items</span>
       </header>
       <main className="content-body">
         <div className="inbox-container">
@@ -245,6 +262,29 @@ export function InboxView() {
               )}
             </div>
           </form>
+
+          {inboxItems.length > 0 && (
+            <div className="inbox-items">
+              {inboxItems.map((task) => (
+                <div
+                  key={task.id}
+                  className="inbox-item"
+                  onClick={() => onSelectTask?.(task)}
+                >
+                  <button
+                    className="inbox-item-checkbox"
+                    onClick={(e) => { e.stopPropagation(); toggleTask(task.id); }}
+                    aria-label="Complete task"
+                  >
+                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="2">
+                      <circle cx="9" cy="9" r="7" />
+                    </svg>
+                  </button>
+                  <span className="inbox-item-title">{task.title}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </main>
     </>

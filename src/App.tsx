@@ -697,7 +697,7 @@ function App() {
       {/* Main Content */}
       <div className="main-content">
         {currentView === 'inbox' && (
-          <InboxView />
+          <InboxView onSelectTask={(task: Task) => setSelectedTaskId(task.id)} />
         )}
 
         {currentView === 'tasks' && (
