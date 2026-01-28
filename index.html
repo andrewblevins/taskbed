@@ -18,6 +18,41 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      // Debug script - runs before module loading
+      console.log('[Taskbed Debug] Page loaded at:', window.location.href);
+      console.log('[Taskbed Debug] Document ready state:', document.readyState);
+
+      // Monitor all network requests for JS files
+      if (window.PerformanceObserver) {
+        try {
+          const observer = new PerformanceObserver((list) => {
+            for (const entry of list.getEntries()) {
+              if (entry.name.includes('.js')) {
+                console.log('[Taskbed Debug] JS resource:', entry.name, 'duration:', entry.duration);
+              }
+            }
+          });
+          observer.observe({ entryTypes: ['resource'] });
+        } catch (e) {
+          console.log('[Taskbed Debug] PerformanceObserver not available');
+        }
+      }
+
+      // Log any errors loading scripts
+      window.addEventListener('error', function(e) {
+        if (e.target && (e.target.tagName === 'SCRIPT' || e.target.tagName === 'LINK')) {
+          console.error('[Taskbed Debug] Failed to load resource:', e.target.src || e.target.href);
+          console.error('[Taskbed Debug] Error details:', e);
+
+          // Show error on page
+          var errorDiv = document.createElement('div');
+          errorDiv.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#ff3b30;color:white;padding:20px;z-index:99999;font-family:system-ui;';
+          errorDiv.innerHTML = '<strong>Failed to load:</strong> ' + (e.target.src || e.target.href) + '<br><small>Check console for details</small>';
+          document.body.appendChild(errorDiv);
+        }
+      }, true);
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
