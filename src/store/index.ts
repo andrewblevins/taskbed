@@ -136,7 +136,7 @@ interface TaskbedState {
     tags?: string[];
     dueDate?: number;
     attributes?: Record<string, string>;
-  }) => void;
+  }) => string;
   updateTask: (id: string, updates: Partial<Task>) => void;
   deleteTask: (id: string) => void;
   toggleTask: (id: string) => void;
@@ -247,12 +247,13 @@ export const useStore = create<TaskbedState>()(
           morningFocusInProgress: false,
         }),
 
-      addTask: (title, options = {}) =>
+      addTask: (title, options = {}) => {
+        const id = uuid();
         set((state) => ({
           tasks: [
             ...state.tasks,
             {
-              id: uuid(),
+              id,
               title,
               completed: false,
               status: options.status ?? 'active',
@@ -265,7 +266,9 @@ export const useStore = create<TaskbedState>()(
               createdAt: Date.now(),
             },
           ],
-        })),
+        }));
+        return id;
+      },
 
       updateTask: (id, updates) =>
         set((state) => ({

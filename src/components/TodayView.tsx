@@ -19,6 +19,7 @@ export function TodayView({ onSelectTask }: TodayViewProps) {
   const morningFocusInProgress = useStore((s) => s.morningFocusInProgress);
   const startMorningFocus = useStore((s) => s.startMorningFocus);
   const toggleTask = useStore((s) => s.toggleTask);
+  const deleteTask = useStore((s) => s.deleteTask);
   const clearDailyData = useStore((s) => s.clearDailyData);
 
   // Check if we have a valid focus for today
@@ -115,6 +116,16 @@ export function TodayView({ onSelectTask }: TodayViewProps) {
                   </svg>
                 </button>
                 <span className="today-task-title">{task.title}</span>
+                <button
+                  className="today-task-delete"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    deleteTask(task.id);
+                  }}
+                  title="Delete task"
+                >
+                  ×
+                </button>
               </div>
             ))}
 
@@ -141,6 +152,16 @@ export function TodayView({ onSelectTask }: TodayViewProps) {
                       </svg>
                     </button>
                     <span className="today-task-title">{task.title}</span>
+                    <button
+                      className="today-task-delete"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteTask(task.id);
+                      }}
+                      title="Delete task"
+                    >
+                      ×
+                    </button>
                   </div>
                 ))}
               </div>

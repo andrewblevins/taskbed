@@ -95,11 +95,15 @@ function BrainDump({ onNext }: { onNext: () => void }) {
 
 // Step 2: Choose Focus
 function ChooseFocus({ onNext, onPrev }: { onNext: () => void; onPrev: () => void }) {
+  const [quickAddText, setQuickAddText] = useState('');
   const tasks = useStore((s) => s.tasks);
   const projects = useStore((s) => s.projects);
   const areas = useStore((s) => s.areas);
   const todayTaskIds = useStore((s) => s.todayTaskIds);
   const toggleTodayTask = useStore((s) => s.toggleTodayTask);
+  const toggleTask = useStore((s) => s.toggleTask);
+  const deleteTask = useStore((s) => s.deleteTask);
+  const addTask = useStore((s) => s.addTask);
 
   // Only show active, incomplete tasks
   const activeTasks = useMemo(
@@ -112,11 +116,12 @@ function ChooseFocus({ onNext, onPrev }: { onNext: () => void; onPrev: () => voi
   const areaMap = new Map(areas.map((a) => [a.id, a]));
 
   const grouped = useMemo(() => {
-    const groups: { projectId: string | undefined; tasks: typeof activeTasks }[] = [];
-    const seenProjects = new Set<string | undefined>();
+    const groups: { projectId: string | null; tasks: typeof activeTasks }[] = [];
+    const seenProjects = new Set<string | null>();
 
     activeTasks.forEach((task) => {
-      const key = task.projectId;
+      // Normalize: treat undefined and '' as null (no project)
+      const key = task.projectId || null;
       if (!seenProjects.has(key)) {
         seenProjects.add(key);
         groups.push({ projectId: key, tasks: [] });
@@ -149,27 +154,25 @@ function ChooseFocus({ onNext, onPrev }: { onNext: () => void; onPrev: () => voi
         What matters today? Select the tasks you want to focus on.
       </p>
 
-      {activeTasks.length === 0 ? (
-        <p className="focus-empty">No active tasks. Add some in your brain dump!</p>
-      ) : (
-        <div className="focus-task-selector">
-          {grouped.map((group) => {
-            const project = group.projectId ? projectMap.get(group.projectId) : null;
-            const area = project?.areaId ? areaMap.get(project.areaId) : null;
+      <div className="focus-task-selector">
+        {grouped.map((group) => {
+          const project = group.projectId ? projectMap.get(group.projectId) : null;
+          const area = project?.areaId ? areaMap.get(project.areaId) : null;
 
-            return (
-              <div key={group.projectId || 'no-project'} className="focus-project-group">
-                <div className="focus-project-header">
-                  <span className="focus-project-name">
-                    {project?.name || 'No Project'}
-                  </span>
-                  {area && <span className="focus-area-badge">{area.name}</span>}
-                </div>
-                <div className="focus-project-tasks">
-                  {group.tasks.map((task) => {
-                    const isSelected = todayTaskIds.includes(task.id);
-                    return (
-                      <label key={task.id} className={`focus-task-item ${isSelected ? 'selected' : ''}`}>
+          return (
+            <div key={group.projectId || 'no-project'} className="focus-project-group">
+              <div className="focus-project-header">
+                <span className="focus-project-name">
+                  {project?.name || 'No Project'}
+                </span>
+                {area && <span className="focus-area-badge">{area.name}</span>}
+              </div>
+              <div className="focus-project-tasks">
+                {group.tasks.map((task) => {
+                  const isSelected = todayTaskIds.includes(task.id);
+                  return (
+                    <div key={task.id} className={`focus-task-item ${isSelected ? 'selected' : ''}`}>
+                      <label className="focus-task-select">
                         <input
                           type="checkbox"
                           checked={isSelected}
@@ -182,14 +185,48 @@ function ChooseFocus({ onNext, onPrev }: { onNext: () => void; onPrev: () => voi
                           </span>
                         )}
                       </label>
-                    );
-                  })}
-                </div>
+                      <div className="focus-task-actions">
+                        <button
+                          className="focus-task-action complete"
+                          onClick={() => toggleTask(task.id)}
+                          title="Mark complete"
+                        >
+                          ✓
+                        </button>
+                        <button
+                          className="focus-task-action delete"
+                          onClick={() => deleteTask(task.id)}
+                          title="Delete task"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-            );
-          })}
+            </div>
+          );
+        })}
+
+        {/* Quick add section */}
+        <div className="focus-quick-add">
+          <input
+            type="text"
+            className="focus-quick-add-input"
+            value={quickAddText}
+            onChange={(e) => setQuickAddText(e.target.value)}
+            placeholder="+ Add a task..."
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && quickAddText.trim()) {
+                const newTaskId = addTask(quickAddText.trim());
+                toggleTodayTask(newTaskId);
+                setQuickAddText('');
+              }
+            }}
+          />
         </div>
-      )}
+      </div>
 
       <div className="focus-actions">
         <button className="focus-btn secondary" onClick={onPrev}>
