@@ -28,12 +28,10 @@ interface GroupedTaskListProps {
 export function GroupedTaskList({ onSelectTask, focusedTaskId }: GroupedTaskListProps) {
   const {
     tasks,
-    attributes,
     projects,
     areas,
     currentGrouping,
     reorderTasks,
-    moveTaskToAttributeGroup,
     moveTaskToProject,
     moveTaskToArea,
     selectedTagFilter,
@@ -52,10 +50,10 @@ export function GroupedTaskList({ onSelectTask, focusedTaskId }: GroupedTaskList
     })
   );
 
-  // Only show active tasks (not completed, not someday, not waiting)
-  // Also filter by tag if a tag filter is selected
+  // Only show active tasks (not completed, not waiting)
+  // Also filter by context tag if a filter is selected
   const incompleteTasks = tasks.filter((t) => {
-    if (t.completed || (t.status && t.status !== 'active')) return false;
+    if (t.completed || t.status !== 'active') return false;
     if (selectedTagFilter && !(t.tags || []).includes(selectedTagFilter)) return false;
     return true;
   });
@@ -78,22 +76,7 @@ export function GroupedTaskList({ onSelectTask, focusedTaskId }: GroupedTaskList
     if (overId.startsWith('group-')) {
       const groupId = overId.replace('group-', '');
 
-      if ('attributeId' in currentGrouping) {
-        // Moving to an attribute group
-        const attr = attributes.find((a) => a.id === currentGrouping.attributeId);
-        if (attr) {
-          const targetTasks = incompleteTasks.filter((t) => {
-            const value = t.attributes[attr.id];
-            return groupId === 'unset' ? !value : value === groupId;
-          });
-          moveTaskToAttributeGroup(
-            activeTaskId,
-            currentGrouping.attributeId,
-            groupId === 'unset' ? '' : groupId,
-            targetTasks.length
-          );
-        }
-      } else if ('type' in currentGrouping && currentGrouping.type === 'project') {
+      if (currentGrouping.type === 'project') {
         // Moving to a project group
         const targetTasks = incompleteTasks.filter((t) => {
           return groupId === 'unset' ? !t.projectId : t.projectId === groupId;
@@ -103,7 +86,7 @@ export function GroupedTaskList({ onSelectTask, focusedTaskId }: GroupedTaskList
           groupId === 'unset' ? undefined : groupId,
           targetTasks.length
         );
-      } else if ('type' in currentGrouping && currentGrouping.type === 'area') {
+      } else if (currentGrouping.type === 'area') {
         // Moving to an area group
         const resolveAreaId = (t: Task) => t.areaId || (t.projectId ? projects.find(p => p.id === t.projectId)?.areaId : undefined);
         const targetTasks = incompleteTasks.filter((t) => {
@@ -120,35 +103,14 @@ export function GroupedTaskList({ onSelectTask, focusedTaskId }: GroupedTaskList
     }
 
     // Reordering within or across groups
-    const activeTask = tasks.find((t) => t.id === activeTaskId);
+    const activeTaskObj = tasks.find((t) => t.id === activeTaskId);
     const overTask = tasks.find((t) => t.id === overId);
 
-    if (!activeTask || !overTask) return;
+    if (!activeTaskObj || !overTask) return;
 
     // Determine if we're moving between groups
-    if ('attributeId' in currentGrouping) {
-      const attr = attributes.find((a) => a.id === currentGrouping.attributeId);
-      if (attr) {
-        const activeValue = activeTask.attributes[attr.id] || '';
-        const overValue = overTask.attributes[attr.id] || '';
-
-        if (activeValue !== overValue) {
-          // Moving to a different attribute group
-          const targetGroupTasks = incompleteTasks.filter(
-            (t) => (t.attributes[attr.id] || '') === overValue
-          );
-          const overIndex = targetGroupTasks.findIndex((t) => t.id === overId);
-          moveTaskToAttributeGroup(
-            activeTaskId,
-            attr.id,
-            overValue,
-            overIndex >= 0 ? overIndex : targetGroupTasks.length
-          );
-          return;
-        }
-      }
-    } else if ('type' in currentGrouping && currentGrouping.type === 'project') {
-      const activeProjectId = activeTask.projectId || '';
+    if (currentGrouping.type === 'project') {
+      const activeProjectId = activeTaskObj.projectId || '';
       const overProjectId = overTask.projectId || '';
 
       if (activeProjectId !== overProjectId) {
@@ -164,9 +126,9 @@ export function GroupedTaskList({ onSelectTask, focusedTaskId }: GroupedTaskList
         );
         return;
       }
-    } else if ('type' in currentGrouping && currentGrouping.type === 'area') {
+    } else if (currentGrouping.type === 'area') {
       const resolveAreaId = (t: Task) => t.areaId || (t.projectId ? projects.find(p => p.id === t.projectId)?.areaId : undefined);
-      const activeAreaId = resolveAreaId(activeTask) || '';
+      const activeAreaId = resolveAreaId(activeTaskObj) || '';
       const overAreaId = resolveAreaId(overTask) || '';
 
       if (activeAreaId !== overAreaId) {
@@ -196,7 +158,7 @@ export function GroupedTaskList({ onSelectTask, focusedTaskId }: GroupedTaskList
   };
 
   // Group by project
-  if ('type' in currentGrouping && currentGrouping.type === 'project') {
+  if (currentGrouping.type === 'project') {
     const groups: Record<string, Task[]> = {};
 
     projects.forEach((p) => {
@@ -270,7 +232,7 @@ export function GroupedTaskList({ onSelectTask, focusedTaskId }: GroupedTaskList
   }
 
   // Group by area
-  if ('type' in currentGrouping && currentGrouping.type === 'area') {
+  if (currentGrouping.type === 'area') {
     const resolveAreaId = (t: Task) => t.areaId || (t.projectId ? projects.find(p => p.id === t.projectId)?.areaId : undefined);
 
     const groups: Record<string, Task[]> = {};
@@ -344,82 +306,7 @@ export function GroupedTaskList({ onSelectTask, focusedTaskId }: GroupedTaskList
     );
   }
 
-  // Group by attribute
-  if ('attributeId' in currentGrouping) {
-    const attr = attributes.find((a) => a.id === currentGrouping.attributeId);
-    if (!attr) return <div>Attribute not found</div>;
-
-    const groups: Record<string, Task[]> = {};
-
-    attr.options.forEach((opt) => {
-      groups[opt.id] = [];
-    });
-    groups['unset'] = [];
-
-    incompleteTasks.forEach((task) => {
-      const value = task.attributes[attr.id];
-      if (value && groups[value]) {
-        groups[value].push(task);
-      } else {
-        groups['unset'].push(task);
-      }
-    });
-
-    const allTaskIds = incompleteTasks.map((t) => t.id);
-
-    return (
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragStart={handleDragStart}
-        onDragEnd={handleDragEnd}
-      >
-        <div className="grouped-list">
-          <SortableContext items={allTaskIds} strategy={verticalListSortingStrategy}>
-            {attr.options.map((opt) => (
-              <div key={opt.id} className="task-group">
-                <h3
-                  className="group-header droppable"
-                  style={{ borderLeftColor: opt.color }}
-                  data-group-id={opt.id}
-                >
-                  {opt.label}
-                  <span className="group-count">{groups[opt.id].length}</span>
-                </h3>
-                <div className="group-tasks">
-                  {groups[opt.id].map((task) => (
-                    <DraggableTask key={task.id} task={task} onSelect={onSelectTask} isFocused={focusedTaskId === task.id} />
-                  ))}
-                </div>
-              </div>
-            ))}
-            {groups['unset'].length > 0 && (
-              <div className="task-group">
-                <h3 className="group-header unset droppable" data-group-id="unset">
-                  Uncategorized
-                  <span className="group-count">{groups['unset'].length}</span>
-                </h3>
-                <div className="group-tasks">
-                  {groups['unset'].map((task) => (
-                    <DraggableTask key={task.id} task={task} onSelect={onSelectTask} isFocused={focusedTaskId === task.id} />
-                  ))}
-                </div>
-              </div>
-            )}
-          </SortableContext>
-        </div>
-        <DragOverlay>
-          {activeTask ? (
-            <div className="drag-overlay">
-              <TaskItem task={activeTask} onSelect={() => {}} />
-            </div>
-          ) : null}
-        </DragOverlay>
-      </DndContext>
-    );
-  }
-
-  // Flat list (no grouping)
+  // Flat list (no grouping - type === 'none')
   const allTaskIds = incompleteTasks.map((t) => t.id);
 
   return (

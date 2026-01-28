@@ -14,7 +14,6 @@ export function TaskDetail({ task, onClose }: TaskDetailProps) {
     projects,
     areas,
     attributes,
-    setTaskStatus,
     moveToWaiting,
     activateTask,
     availableTags,
@@ -68,10 +67,6 @@ export function TaskDetail({ task, onClose }: TaskDetailProps) {
     onClose();
   };
 
-  const handleDeferToSomeday = () => {
-    setTaskStatus(task.id, 'someday');
-    onClose();
-  };
 
   const handleMoveToWaiting = () => {
     if (waitingFor.trim()) {
@@ -261,11 +256,10 @@ export function TaskDetail({ task, onClose }: TaskDetailProps) {
             <div className="task-status-section">
               <span className={`status-badge status-${currentStatus}`}>
                 {currentStatus === 'active' && 'Active'}
-                {currentStatus === 'someday' && 'Someday / Maybe'}
                 {currentStatus === 'waiting' && `Waiting for ${task.waitingFor || 'something'}`}
               </span>
 
-              {currentStatus !== 'active' && (
+              {currentStatus === 'waiting' && (
                 <button className="status-action-inline activate" onClick={handleActivate}>
                   Move to Active
                 </button>
@@ -278,9 +272,6 @@ export function TaskDetail({ task, onClose }: TaskDetailProps) {
             <div className="task-detail-field">
               <label>Quick Actions</label>
               <div className="task-status-actions">
-                <button className="status-action-btn-large someday" onClick={handleDeferToSomeday}>
-                  Defer to Someday
-                </button>
                 <button
                   className="status-action-btn-large waiting"
                   onClick={() => setShowWaitingPrompt(true)}

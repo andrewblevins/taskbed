@@ -16,6 +16,7 @@ export function InboxView({ onSelectTask }: InboxViewProps) {
     addTag,
     tasks,
     toggleTask,
+    startDailyReview,
   } = useStore();
 
   const [title, setTitle] = useState('');
@@ -110,13 +111,12 @@ export function InboxView({ onSelectTask }: InboxViewProps) {
 
   const activeProjects = projects.filter(p => p.status === 'active');
 
-  // Inbox items: active, not completed, no project and no area assigned
+  // Inbox items: unprocessed tasks (not yet clarified)
   const inboxItems = useMemo(() =>
     tasks.filter(t =>
       !t.completed &&
-      (t.status === 'active' || !t.status) &&
-      !t.projectId &&
-      !t.areaId
+      !t.processed &&
+      t.status === 'active'
     ).sort((a, b) => b.createdAt - a.createdAt),
     [tasks]
   );
@@ -126,6 +126,11 @@ export function InboxView({ onSelectTask }: InboxViewProps) {
       <header className="content-header">
         <h2>Inbox</h2>
         <span className="header-count">{inboxItems.length} items</span>
+        {inboxItems.length > 0 && (
+          <button className="process-inbox-btn" onClick={startDailyReview}>
+            Process Inbox
+          </button>
+        )}
       </header>
       <main className="content-body">
         <div className="inbox-container">

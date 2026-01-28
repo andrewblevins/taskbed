@@ -6,9 +6,11 @@ import { TaskDetail } from './components/TaskDetail';
 import { ProjectsView } from './components/ProjectsView';
 import { AttributeManager } from './components/AttributeManager';
 import { WeeklyReview } from './components/WeeklyReview';
+import { DailyReview } from './components/DailyReview';
 import { CompletedView } from './components/CompletedView';
 import { InboxView } from './components/InboxView';
 import { TodayView } from './components/TodayView';
+import { SomedayView } from './components/SomedayView';
 import { KeyboardShortcutsHelp } from './components/KeyboardShortcutsHelp';
 import { Auth } from './components/Auth';
 import { useStore, useTemporalStore, subscribeToRealtimeUpdates, setCurrentUserId } from './store';
@@ -70,7 +72,6 @@ function SearchResultItem({
 
   const statusLabel = {
     active: 'Active',
-    someday: 'Someday',
     waiting: 'Waiting',
   };
 
@@ -97,64 +98,6 @@ function formatWaitingDuration(since: number): string {
   if (days === 0) return 'today';
   if (days === 1) return '1 day';
   return `${days} days`;
-}
-
-// Someday View
-function SomedayView({ onSelectTask }: { onSelectTask: (task: Task) => void }) {
-  const tasks = useStore((s) => s.tasks);
-  const projects = useStore((s) => s.projects);
-  const activateTask = useStore((s) => s.activateTask);
-  const deleteTask = useStore((s) => s.deleteTask);
-
-  const somedayTasks = tasks.filter((t) => !t.completed && t.status === 'someday');
-  const projectMap = new Map(projects.map((p) => [p.id, p]));
-
-  return (
-    <>
-      <header className="content-header">
-        <h2>Someday / Maybe</h2>
-        <span className="header-count">{somedayTasks.length} items</span>
-      </header>
-      <main className="content-body">
-        {somedayTasks.length === 0 ? (
-          <div className="empty-state">
-            <p>No someday items. Ideas you're not ready to commit to will appear here.</p>
-          </div>
-        ) : (
-          <div className="status-task-list">
-            {somedayTasks.map((task) => (
-              <div key={task.id} className="status-task-item" onClick={() => onSelectTask(task)}>
-                <div className="status-task-content">
-                  <span className="status-task-title">{task.title}</span>
-                  {task.projectId && (
-                    <span className="status-task-project">
-                      {projectMap.get(task.projectId)?.name}
-                    </span>
-                  )}
-                </div>
-                <div className="status-task-actions">
-                  <button
-                    className="status-action-btn activate"
-                    onClick={(e) => { e.stopPropagation(); activateTask(task.id); }}
-                    title="Move to Active"
-                  >
-                    Activate
-                  </button>
-                  <button
-                    className="status-action-btn delete"
-                    onClick={(e) => { e.stopPropagation(); deleteTask(task.id); }}
-                    title="Delete"
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </main>
-    </>
-  );
 }
 
 // Waiting For View
@@ -263,9 +206,19 @@ function App() {
   const reviewStep = useStore((s) => s.reviewStep);
   const startReview = useStore((s) => s.startReview);
   const resumeReview = useStore((s) => s.resumeReview);
+  const dailyReviewInProgress = useStore((s) => s.dailyReviewInProgress);
+  const runMigrationV3 = useStore((s) => s.runMigrationV3);
   const availableTags = useStore((s) => s.availableTags);
   const selectedTagFilter = useStore((s) => s.selectedTagFilter);
   const setTagFilter = useStore((s) => s.setTagFilter);
+
+  // Run migration on first load if needed
+  useEffect(() => {
+    const migrated = localStorage.getItem('gtd-contexts-migrated');
+    if (!migrated) {
+      runMigrationV3();
+    }
+  }, [runMigrationV3]);
 
   // Undo/Redo
   const undo = useTemporalStore((state) => state.undo);
@@ -500,6 +453,11 @@ function App() {
   // Full-screen review mode
   if (reviewInProgress) {
     return <WeeklyReview />;
+  }
+
+  // Full-screen daily review mode
+  if (dailyReviewInProgress) {
+    return <DailyReview />;
   }
 
   const handleLogout = async () => {
@@ -750,7 +708,7 @@ function App() {
         )}
 
         {currentView === 'someday' && (
-          <SomedayView onSelectTask={(task: Task) => setSelectedTaskId(task.id)} />
+          <SomedayView />
         )}
 
         {currentView === 'waiting' && (

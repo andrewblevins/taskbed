@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { temporal } from 'zundo';
 import { v4 as uuid } from 'uuid';
-import type { Task, Project, Area, AttributeDefinition, ViewGrouping, TaskStatus, ProjectStatus } from '../types';
+import type { Task, Project, Area, AttributeDefinition, ViewGrouping, TaskStatus, ProjectStatus, SomedayItem } from '../types';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
 const API_URL = 'http://localhost:3847/api/data';
@@ -95,22 +95,37 @@ interface TaskbedState {
   projects: Project[];
   areas: Area[];
   attributes: AttributeDefinition[];
-  availableTags: string[]; // GTD contexts like @phone, @errands, @computer
+  availableTags: string[]; // GTD contexts: @deep, @shallow, @calls, @out, @offline
   currentGrouping: ViewGrouping;
-  selectedTagFilter: string | null; // filter tasks by tag
+  selectedTagFilter: string | null; // filter tasks by context
 
-  // Review state
+  // Someday/Maybe items (separate from tasks)
+  somedayItems: SomedayItem[];
+
+  // Weekly Review state
   reviewInProgress: boolean;
   reviewStep: number;
 
-  // Review actions
+  // Weekly Review actions
   startReview: () => void;
   resumeReview: () => void;
   nextReviewStep: () => void;
   prevReviewStep: () => void;
   exitReview: () => void;
 
-  // Morning Focus state
+  // Daily Review state
+  dailyReviewInProgress: boolean;
+  dailyReviewStep: number;
+  dailyReviewProcessedCount: number;
+
+  // Daily Review actions
+  startDailyReview: () => void;
+  nextDailyReviewStep: () => void;
+  prevDailyReviewStep: () => void;
+  exitDailyReview: () => void;
+  incrementDailyReviewProcessed: () => void;
+
+  // Morning Focus state (keeping for now, may remove later)
   dailyIntention: string;
   todayTaskIds: string[];
   todayDate: string;
@@ -136,21 +151,30 @@ interface TaskbedState {
     tags?: string[];
     dueDate?: number;
     attributes?: Record<string, string>;
+    processed?: boolean;
   }) => string;
   updateTask: (id: string, updates: Partial<Task>) => void;
   deleteTask: (id: string) => void;
   toggleTask: (id: string) => void;
   reorderTasks: (taskIds: string[]) => void;
-  moveTaskToAttributeGroup: (taskId: string, attributeId: string, value: string, newIndex: number) => void;
   moveTaskToProject: (taskId: string, projectId: string | undefined, newIndex: number) => void;
   moveTaskToArea: (taskId: string, areaId: string | undefined, newIndex: number) => void;
+  markTaskProcessed: (id: string) => void;
+
   // Status actions
   setTaskStatus: (id: string, status: TaskStatus) => void;
   moveToWaiting: (id: string, waitingFor: string) => void;
   activateTask: (id: string) => void;
 
+  // Someday/Maybe actions
+  addSomedayItem: (title: string, notes?: string) => string;
+  updateSomedayItem: (id: string, updates: Partial<SomedayItem>) => void;
+  deleteSomedayItem: (id: string) => void;
+  convertSomedayToTask: (id: string, context: string) => string;
+  convertSomedayToProject: (id: string, projectName: string, firstActionTitle: string, context: string) => void;
+
   // Project actions
-  addProject: (name: string, areaId?: string) => void;
+  addProject: (name: string, areaId?: string) => string;
   updateProject: (id: string, updates: Partial<Project>) => void;
   deleteProject: (id: string) => void;
   completeProject: (id: string) => void;
@@ -180,37 +204,34 @@ interface TaskbedState {
   addTagToTask: (taskId: string, tag: string) => void;
   removeTagFromTask: (taskId: string, tag: string) => void;
   setTagFilter: (tag: string | null) => void;
+  setTaskContext: (taskId: string, context: string) => void;
 
   // Due date actions
   setDueDate: (taskId: string, dueDate: number | undefined) => void;
 
   // Sync action
   syncFromFile: () => Promise<void>;
+
+  // Migration action
+  runMigrationV3: () => void;
 }
 
 export const useStore = create<TaskbedState>()(
   temporal(
     persist(
-    (set) => ({
+    (set, get) => ({
       tasks: [],
       projects: [],
       areas: [],
-      attributes: [
-        {
-          id: 'energy',
-          name: 'Energy',
-          options: [
-            { id: 'high', label: 'High', color: '#ef4444' },
-            { id: 'medium', label: 'Medium', color: '#f59e0b' },
-            { id: 'low', label: 'Low', color: '#22c55e' },
-          ],
-        },
-      ],
-      availableTags: ['@phone', '@computer', '@errands', '@home', '@office', '@anywhere'],
-      currentGrouping: { attributeId: 'energy' },
+      attributes: [],
+      availableTags: ['@deep', '@shallow', '@calls', '@out', '@offline'],
+      currentGrouping: { type: 'project' },
       selectedTagFilter: null,
 
-      // Review state
+      // Someday/Maybe items
+      somedayItems: [],
+
+      // Weekly Review state
       reviewInProgress: false,
       reviewStep: 0,
 
@@ -219,6 +240,17 @@ export const useStore = create<TaskbedState>()(
       nextReviewStep: () => set((state) => ({ reviewStep: state.reviewStep + 1 })),
       prevReviewStep: () => set((state) => ({ reviewStep: Math.max(0, state.reviewStep - 1) })),
       exitReview: () => set({ reviewInProgress: false }),
+
+      // Daily Review state
+      dailyReviewInProgress: false,
+      dailyReviewStep: 0,
+      dailyReviewProcessedCount: 0,
+
+      startDailyReview: () => set({ dailyReviewInProgress: true, dailyReviewStep: 0, dailyReviewProcessedCount: 0 }),
+      nextDailyReviewStep: () => set((state) => ({ dailyReviewStep: state.dailyReviewStep + 1 })),
+      prevDailyReviewStep: () => set((state) => ({ dailyReviewStep: Math.max(0, state.dailyReviewStep - 1) })),
+      exitDailyReview: () => set({ dailyReviewInProgress: false }),
+      incrementDailyReviewProcessed: () => set((state) => ({ dailyReviewProcessedCount: state.dailyReviewProcessedCount + 1 })),
 
       // Morning Focus state
       dailyIntention: '',
@@ -263,6 +295,7 @@ export const useStore = create<TaskbedState>()(
               tags: options.tags ?? [],
               dueDate: options.dueDate,
               attributes: options.attributes ?? {},
+              processed: options.processed ?? false,
               createdAt: Date.now(),
             },
           ],
@@ -305,28 +338,6 @@ export const useStore = create<TaskbedState>()(
           return { tasks: [...reorderedTasks, ...otherTasks] };
         }),
 
-      moveTaskToAttributeGroup: (taskId, attributeId, value, newIndex) =>
-        set((state) => {
-          const task = state.tasks.find((t) => t.id === taskId);
-          if (!task) return state;
-
-          const newAttributes = { ...task.attributes };
-          if (value) {
-            newAttributes[attributeId] = value;
-          } else {
-            delete newAttributes[attributeId];
-          }
-
-          const updatedTask = { ...task, attributes: newAttributes };
-          const otherTasks = state.tasks.filter((t) => t.id !== taskId);
-
-          // Insert at new position
-          const newTasks = [...otherTasks];
-          newTasks.splice(newIndex, 0, updatedTask);
-
-          return { tasks: newTasks };
-        }),
-
       moveTaskToProject: (taskId, projectId, newIndex) =>
         set((state) => {
           const task = state.tasks.find((t) => t.id === taskId);
@@ -356,6 +367,13 @@ export const useStore = create<TaskbedState>()(
           return { tasks: newTasks };
         }),
 
+      markTaskProcessed: (id) =>
+        set((state) => ({
+          tasks: state.tasks.map((t) =>
+            t.id === id ? { ...t, processed: true } : t
+          ),
+        })),
+
       setTaskStatus: (id, status) =>
         set((state) => ({
           tasks: state.tasks.map((t) =>
@@ -380,6 +398,7 @@ export const useStore = create<TaskbedState>()(
                   status: 'waiting' as const,
                   waitingFor,
                   waitingSince: Date.now(),
+                  processed: true,
                 }
               : t
           ),
@@ -399,16 +418,107 @@ export const useStore = create<TaskbedState>()(
           ),
         })),
 
-      addProject: (name, areaId) =>
+      // Someday/Maybe actions
+      addSomedayItem: (title, notes) => {
+        const id = uuid();
+        set((state) => ({
+          somedayItems: [
+            ...state.somedayItems,
+            { id, title, notes, createdAt: Date.now() },
+          ],
+        }));
+        return id;
+      },
+
+      updateSomedayItem: (id, updates) =>
+        set((state) => ({
+          somedayItems: state.somedayItems.map((item) =>
+            item.id === id ? { ...item, ...updates } : item
+          ),
+        })),
+
+      deleteSomedayItem: (id) =>
+        set((state) => ({
+          somedayItems: state.somedayItems.filter((item) => item.id !== id),
+        })),
+
+      convertSomedayToTask: (id, context) => {
+        const state = get();
+        const item = state.somedayItems.find((i) => i.id === id);
+        if (!item) return '';
+
+        const taskId = uuid();
+        set((s) => ({
+          somedayItems: s.somedayItems.filter((i) => i.id !== id),
+          tasks: [
+            ...s.tasks,
+            {
+              id: taskId,
+              title: item.title,
+              notes: item.notes,
+              completed: false,
+              status: 'active' as const,
+              tags: [context],
+              attributes: {},
+              processed: true,
+              createdAt: Date.now(),
+            },
+          ],
+        }));
+        return taskId;
+      },
+
+      convertSomedayToProject: (id, projectName, firstActionTitle, context) => {
+        const state = get();
+        const item = state.somedayItems.find((i) => i.id === id);
+        if (!item) return;
+
+        const projectId = uuid();
+        const taskId = uuid();
+        const maxOrder = Math.max(0, ...state.projects.map((p) => p.order ?? 0));
+
+        set((s) => ({
+          somedayItems: s.somedayItems.filter((i) => i.id !== id),
+          projects: [
+            ...s.projects,
+            {
+              id: projectId,
+              name: projectName,
+              order: maxOrder + 1,
+              createdAt: Date.now(),
+              status: 'active' as ProjectStatus,
+            },
+          ],
+          tasks: [
+            ...s.tasks,
+            {
+              id: taskId,
+              title: firstActionTitle,
+              completed: false,
+              status: 'active' as const,
+              projectId,
+              tags: [context],
+              attributes: {},
+              processed: true,
+              createdAt: Date.now(),
+            },
+          ],
+        }));
+      },
+
+      addProject: (name, areaId) => {
+        const id = uuid();
         set((state) => {
           const maxOrder = Math.max(0, ...state.projects.map((p) => p.order ?? 0));
           return {
             projects: [
               ...state.projects,
-              { id: uuid(), name, areaId, order: maxOrder + 1, createdAt: Date.now(), status: 'active' as ProjectStatus },
+              { id, name, areaId, order: maxOrder + 1, createdAt: Date.now(), status: 'active' as ProjectStatus },
             ],
           };
-        }),
+        });
+        return id;
+      },
 
       updateProject: (id, updates) =>
         set((state) => ({
@@ -575,6 +685,15 @@ export const useStore = create<TaskbedState>()(
 
       setTagFilter: (tag) => set({ selectedTagFilter: tag }),
 
+      setTaskContext: (taskId, context) =>
+        set((state) => ({
+          tasks: state.tasks.map((task) =>
+            task.id === taskId
+              ? { ...task, tags: [context], processed: true }
+              : task
+          ),
+        })),
+
       setDueDate: (taskId, dueDate) =>
         set((state) => ({
           tasks: state.tasks.map((task) =>
@@ -615,11 +734,80 @@ export const useStore = create<TaskbedState>()(
           console.debug('File sync skipped:', err);
         }
       },
+
+      // Migration from v2 to v3: new contexts, someday items, remove energy
+      runMigrationV3: () => {
+        const state = get();
+
+        // Keywords for context assignment
+        const deepKeywords = ['write', 'draft', 'design', 'plan', 'think', 'research', 'read', 'review', 'analyze', 'create', 'build', 'implement', 'code', 'debug', 'develop', 'architect', 'document', 'prepare', 'compose', 'strategize'];
+        const callsKeywords = ['call', 'phone', 'talk', 'discuss', 'meet', 'ask', 'interview', 'speak', 'chat', 'conversation'];
+        const outKeywords = ['buy', 'pick up', 'drop off', 'return', 'errand', 'store', 'shop', 'deliver', 'mail', 'post office', 'bank', 'pharmacy', 'grocery', 'visit', 'appointment'];
+        const shallowKeywords = ['email', 'reply', 'send', 'quick', 'update', 'check', 'confirm', 'schedule', 'order', 'submit', 'file', 'organize', 'book', 'register', 'pay', 'renew'];
+
+        const assignContext = (title: string, notes?: string): string => {
+          const text = `${title} ${notes || ''}`.toLowerCase();
+
+          for (const kw of callsKeywords) {
+            if (text.includes(kw)) return '@calls';
+          }
+          for (const kw of outKeywords) {
+            if (text.includes(kw)) return '@out';
+          }
+          for (const kw of deepKeywords) {
+            if (text.includes(kw)) return '@deep';
+          }
+          for (const kw of shallowKeywords) {
+            if (text.includes(kw)) return '@shallow';
+          }
+          return '@shallow'; // default
+        };
+
+        // Migrate tasks
+        const newSomedayItems: SomedayItem[] = [...state.somedayItems];
+        const migratedTasks: Task[] = [];
+
+        for (const task of state.tasks) {
+          // Handle someday tasks - move to someday items
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          if ((task as any).status === 'someday') {
+            newSomedayItems.push({
+              id: task.id,
+              title: task.title,
+              notes: task.notes,
+              createdAt: task.createdAt,
+            });
+            continue;
+          }
+
+          // Assign new context
+          const context = assignContext(task.title, task.notes);
+
+          migratedTasks.push({
+            ...task,
+            tags: [context],
+            processed: true,
+            attributes: {}, // clear energy attribute
+          });
+        }
+
+        // Update state
+        set({
+          tasks: migratedTasks,
+          somedayItems: newSomedayItems,
+          availableTags: ['@deep', '@shallow', '@calls', '@out', '@offline'],
+          attributes: [], // remove energy attribute
+          currentGrouping: { type: 'project' },
+        });
+
+        // Mark migration as complete
+        localStorage.setItem('gtd-contexts-migrated', 'true');
+      },
     }),
     {
       name: 'taskbed-storage',
       storage: createJSONStorage(() => fileBackedStorage),
-      version: 2,
+      version: 3,
       migrate: (persistedState, version) => {
         const state = persistedState as TaskbedState;
         if (version < 2) {
@@ -636,6 +824,13 @@ export const useStore = create<TaskbedState>()(
             return p;
           });
         }
+        if (version < 3) {
+          // Initialize new fields for v3
+          state.somedayItems = state.somedayItems || [];
+          state.dailyReviewInProgress = false;
+          state.dailyReviewStep = 0;
+          state.dailyReviewProcessedCount = 0;
+        }
         return state;
       },
     }
@@ -643,7 +838,7 @@ export const useStore = create<TaskbedState>()(
     {
       // Limit history to prevent memory bloat
       limit: 50,
-      // Only track data changes, not UI state like reviewInProgress
+      // Only track data changes, not UI state
       partialize: (state) => {
         const {
           reviewInProgress,
@@ -655,6 +850,9 @@ export const useStore = create<TaskbedState>()(
           dailyIntention,
           todayTaskIds,
           todayDate,
+          dailyReviewInProgress,
+          dailyReviewStep,
+          dailyReviewProcessedCount,
           ...data
         } = state;
         void reviewInProgress;
@@ -666,6 +864,9 @@ export const useStore = create<TaskbedState>()(
         void dailyIntention;
         void todayTaskIds;
         void todayDate;
+        void dailyReviewInProgress;
+        void dailyReviewStep;
+        void dailyReviewProcessedCount;
         return data;
       },
     }

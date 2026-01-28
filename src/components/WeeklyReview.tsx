@@ -693,23 +693,22 @@ function ReviewWaitingFor({ onNext, onPrev }: { onNext: () => void; onPrev: () =
   );
 }
 
-// Step 7: Review Someday
+// Step 7: Review Someday (now uses SomedayItem list)
 function ReviewSomeday({ onNext, onPrev }: { onNext: () => void; onPrev: () => void }) {
-  const tasks = useStore((s) => s.tasks);
-  const activateTask = useStore((s) => s.activateTask);
-  const deleteTask = useStore((s) => s.deleteTask);
-  const [activatedCount, setActivatedCount] = useState(0);
+  const somedayItems = useStore((s) => s.somedayItems);
+  const deleteSomedayItem = useStore((s) => s.deleteSomedayItem);
+  const convertSomedayToTask = useStore((s) => s.convertSomedayToTask);
+  const [convertedCount, setConvertedCount] = useState(0);
   const [deletedCount, setDeletedCount] = useState(0);
 
-  const somedayTasks = tasks.filter((t) => !t.completed && t.status === 'someday');
-
-  const handleActivate = (taskId: string) => {
-    activateTask(taskId);
-    setActivatedCount((c) => c + 1);
+  const handleConvertToTask = (itemId: string) => {
+    // Default to @shallow context during weekly review (can be changed later)
+    convertSomedayToTask(itemId, '@shallow');
+    setConvertedCount((c) => c + 1);
   };
 
-  const handleDelete = (taskId: string) => {
-    deleteTask(taskId);
+  const handleDelete = (itemId: string) => {
+    deleteSomedayItem(itemId);
     setDeletedCount((c) => c + 1);
   };
 
@@ -721,24 +720,24 @@ function ReviewSomeday({ onNext, onPrev }: { onNext: () => void; onPrev: () => v
         Delete items that no longer resonate.
       </p>
 
-      {somedayTasks.length === 0 ? (
+      {somedayItems.length === 0 ? (
         <p className="review-empty">No someday items to review.</p>
       ) : (
         <div className="review-scan-list">
-          {somedayTasks.map((task) => (
-            <div key={task.id} className="review-scan-task someday-task">
-              <span className="review-scan-task-title">{task.title}</span>
+          {somedayItems.map((item) => (
+            <div key={item.id} className="review-scan-task someday-task">
+              <span className="review-scan-task-title">{item.title}</span>
               <div className="review-scan-task-actions">
                 <button
                   className="review-scan-btn activate"
-                  onClick={() => handleActivate(task.id)}
-                  title="Move to active"
+                  onClick={() => handleConvertToTask(item.id)}
+                  title="Convert to active task"
                 >
                   Activate
                 </button>
                 <button
                   className="review-scan-btn danger"
-                  onClick={() => handleDelete(task.id)}
+                  onClick={() => handleDelete(item.id)}
                   title="Delete"
                 >
                   ×
@@ -754,7 +753,7 @@ function ReviewSomeday({ onNext, onPrev }: { onNext: () => void; onPrev: () => v
           ← Back
         </button>
         <span className="review-count">
-          {somedayTasks.length} someday · {activatedCount} activated · {deletedCount} deleted
+          {somedayItems.length} someday · {convertedCount} activated · {deletedCount} deleted
         </span>
         <button className="review-btn primary" onClick={onNext}>
           Next →

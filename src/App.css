@@ -5214,3 +5214,819 @@ textarea:focus:not(:focus-visible) {
     font-size: 1.125rem;
   }
 }
+
+/* ================================================
+   Daily Review Flow
+   ================================================ */
+
+.daily-review {
+  min-height: 100vh;
+  background: var(--color-bg);
+  display: flex;
+  flex-direction: column;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+.daily-review-header {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  padding: 1.25rem 2rem;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.daily-review-exit {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  transition: all 0.15s ease;
+}
+
+.daily-review-exit:hover {
+  background: var(--color-surface-hover);
+  border-color: var(--color-border-dark);
+}
+
+.daily-review-progress {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.daily-review-step-label {
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+}
+
+.daily-review-progress-bar {
+  width: 100%;
+  height: 4px;
+  background: var(--color-border-light);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.daily-review-progress-fill {
+  height: 100%;
+  background: var(--color-accent);
+  transition: width 0.3s ease;
+}
+
+.daily-review-content {
+  flex: 1;
+  padding: 3rem 2rem;
+  max-width: 640px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Process Inbox Step */
+.process-inbox-step h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0 0 0.5rem;
+}
+
+.inbox-progress-text {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  margin-bottom: 2rem;
+}
+
+.inbox-item-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+.inbox-item-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0;
+  text-align: center;
+}
+
+.decision-prompt {
+  font-size: 0.9375rem;
+  color: var(--color-text-secondary);
+  margin: 1.5rem 0 1rem;
+  text-align: center;
+}
+
+.decision-grid {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.decision-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--color-text);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: left;
+}
+
+.decision-btn:hover {
+  background: var(--color-surface-hover);
+  border-color: var(--color-border);
+}
+
+.decision-btn.primary {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: white;
+}
+
+.decision-btn.primary:hover {
+  background: var(--color-accent-hover);
+}
+
+.decision-btn-icon {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.decision-btn-label {
+  flex: 1;
+}
+
+.decision-btn-hint {
+  font-size: 0.75rem;
+  color: var(--color-text-tertiary);
+  font-weight: 400;
+}
+
+.decision-btn.primary .decision-btn-hint {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Context Selector */
+.context-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+}
+
+.context-selector.compact {
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.context-option {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+  padding: 0.875rem 1rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  font-size: 0.9375rem;
+  color: var(--color-text);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: left;
+}
+
+.context-selector.compact .context-option {
+  flex-direction: row;
+  padding: 0.5rem 0.75rem;
+}
+
+.context-option:hover {
+  background: var(--color-surface-hover);
+  border-color: var(--color-border);
+}
+
+.context-option.selected {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: white;
+}
+
+.context-label {
+  font-weight: 600;
+}
+
+.context-description {
+  font-size: 0.75rem;
+  color: var(--color-text-tertiary);
+}
+
+.context-option.selected .context-description {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.context-selector-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.context-cancel-btn,
+.context-confirm-btn {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.context-cancel-btn {
+  background: transparent;
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+}
+
+.context-cancel-btn:hover {
+  background: var(--color-surface-hover);
+}
+
+.context-confirm-btn {
+  background: var(--color-accent);
+  border: 1px solid var(--color-accent);
+  color: white;
+}
+
+.context-confirm-btn:hover {
+  background: var(--color-accent-hover);
+}
+
+/* Waiting For Input */
+.waiting-input-section {
+  margin-top: 1.5rem;
+}
+
+.waiting-input-section label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.waiting-input-section input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.waiting-input-section input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-accent-alpha);
+}
+
+.waiting-input-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+/* Check Calendar Step */
+.check-calendar-step {
+  text-align: center;
+}
+
+.check-calendar-step h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0 0 1rem;
+}
+
+.check-calendar-step p {
+  font-size: 1rem;
+  color: var(--color-text-secondary);
+  margin: 0 0 2rem;
+  line-height: 1.6;
+}
+
+.calendar-reminder-icon {
+  font-size: 4rem;
+  margin-bottom: 1.5rem;
+}
+
+.continue-btn {
+  padding: 1rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  background: var(--color-accent);
+  border: none;
+  border-radius: var(--radius-md);
+  color: white;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.continue-btn:hover {
+  background: var(--color-accent-hover);
+}
+
+/* Get Clear Step */
+.get-clear-step {
+  text-align: center;
+}
+
+.get-clear-step h2 {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0 0 0.5rem;
+}
+
+.get-clear-summary {
+  font-size: 1rem;
+  color: var(--color-text-secondary);
+  margin-bottom: 2rem;
+}
+
+.stale-waiting-alert {
+  background: var(--color-warning-bg, #fffbeb);
+  border: 1px solid var(--color-warning-border, #fcd34d);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.25rem;
+  margin-bottom: 2rem;
+  text-align: left;
+}
+
+.stale-waiting-alert h4 {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-warning-text, #92400e);
+  margin: 0 0 0.5rem;
+}
+
+.stale-waiting-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.stale-waiting-list li {
+  font-size: 0.875rem;
+  color: var(--color-text);
+  padding: 0.25rem 0;
+}
+
+.start-day-btn {
+  padding: 1rem 2.5rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  background: var(--color-success, #34c759);
+  border: none;
+  border-radius: var(--radius-md);
+  color: white;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.start-day-btn:hover {
+  background: var(--color-success-hover, #2da94e);
+}
+
+/* Empty inbox state */
+.inbox-empty-state {
+  text-align: center;
+  padding: 3rem;
+}
+
+.inbox-empty-state h2 {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0 0 0.5rem;
+}
+
+.inbox-empty-state p {
+  font-size: 1rem;
+  color: var(--color-text-secondary);
+  margin: 0 0 2rem;
+}
+
+/* ================================================
+   Two Minute Timer
+   ================================================ */
+
+.two-minute-timer {
+  text-align: center;
+  padding: 2rem;
+}
+
+.timer-task-title {
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: var(--color-text);
+  margin-bottom: 2rem;
+}
+
+.timer-circle-container {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  margin: 0 auto 2rem;
+}
+
+.timer-circle-svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.timer-circle-bg {
+  fill: none;
+  stroke: var(--color-border-light);
+  stroke-width: 8;
+}
+
+.timer-circle-progress {
+  fill: none;
+  stroke: var(--color-accent);
+  stroke-width: 8;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.5s ease;
+}
+
+.timer-display {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 2.5rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text);
+}
+
+.timer-done-btn {
+  padding: 1rem 2.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  background: var(--color-success, #34c759);
+  border: none;
+  border-radius: var(--radius-md);
+  color: white;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.timer-done-btn:hover {
+  background: var(--color-success-hover, #2da94e);
+}
+
+.timer-cancel-btn {
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  background: transparent;
+  border: none;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+}
+
+.timer-cancel-btn:hover {
+  color: var(--color-text-secondary);
+}
+
+/* Timer expired state */
+.timer-expired {
+  text-align: center;
+  padding: 2rem;
+}
+
+.timer-expired-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.timer-expired h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0 0 0.5rem;
+}
+
+.timer-expired p {
+  font-size: 1rem;
+  color: var(--color-text-secondary);
+  margin: 0 0 1.5rem;
+}
+
+.timer-expired-task {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--color-text);
+  background: var(--color-surface);
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  margin-bottom: 1.5rem;
+}
+
+.timer-expired-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.timer-completed-btn,
+.timer-add-active-btn {
+  padding: 1rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.timer-completed-btn {
+  background: var(--color-success, #34c759);
+  border: none;
+  color: white;
+}
+
+.timer-completed-btn:hover {
+  background: var(--color-success-hover, #2da94e);
+}
+
+.timer-add-active-btn {
+  background: transparent;
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+}
+
+.timer-add-active-btn:hover {
+  background: var(--color-surface-hover);
+}
+
+/* ================================================
+   Someday View
+   ================================================ */
+
+.someday-container {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.someday-add-form {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+}
+
+.someday-input {
+  flex: 1;
+  padding: 0.875rem 1rem;
+  font-size: 1rem;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.someday-input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-accent-alpha);
+}
+
+.someday-add-btn {
+  padding: 0.875rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  background: var(--color-accent);
+  border: none;
+  border-radius: var(--radius-md);
+  color: white;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.someday-add-btn:hover {
+  background: var(--color-accent-hover);
+}
+
+.someday-add-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.someday-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.someday-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  transition: all 0.15s ease;
+}
+
+.someday-item:hover {
+  border-color: var(--color-border);
+}
+
+.someday-item-title {
+  flex: 1;
+  font-size: 1rem;
+  color: var(--color-text);
+}
+
+.someday-item-actions {
+  display: flex;
+  gap: 0.5rem;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.someday-item:hover .someday-item-actions {
+  opacity: 1;
+}
+
+.someday-action-btn {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.someday-action-btn.task {
+  background: var(--color-accent-alpha);
+  border: 1px solid var(--color-accent);
+  color: var(--color-accent);
+}
+
+.someday-action-btn.task:hover {
+  background: var(--color-accent);
+  color: white;
+}
+
+.someday-action-btn.project {
+  background: var(--color-success-alpha, rgba(52, 199, 89, 0.1));
+  border: 1px solid var(--color-success, #34c759);
+  color: var(--color-success, #34c759);
+}
+
+.someday-action-btn.project:hover {
+  background: var(--color-success, #34c759);
+  color: white;
+}
+
+.someday-action-btn.delete {
+  background: transparent;
+  border: 1px solid var(--color-border);
+  color: var(--color-text-tertiary);
+}
+
+.someday-action-btn.delete:hover {
+  background: var(--color-danger, #ff3b30);
+  border-color: var(--color-danger, #ff3b30);
+  color: white;
+}
+
+.someday-empty {
+  text-align: center;
+  padding: 3rem;
+  color: var(--color-text-tertiary);
+}
+
+/* ================================================
+   Convert Someday Modal
+   ================================================ */
+
+.convert-modal {
+  max-width: 480px;
+}
+
+.convert-item-title {
+  font-size: 1.125rem;
+  font-style: italic;
+  color: var(--color-text);
+  text-align: center;
+  margin: 0 0 1.5rem;
+}
+
+.convert-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin: 1.25rem 0 0.5rem;
+}
+
+.convert-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.convert-input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-accent-alpha);
+}
+
+/* ================================================
+   Process Inbox Button (in InboxView)
+   ================================================ */
+
+.process-inbox-btn {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  background: var(--color-accent);
+  border: none;
+  border-radius: var(--radius-md);
+  color: white;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  margin-left: auto;
+}
+
+.process-inbox-btn:hover {
+  background: var(--color-accent-hover);
+}
+
+/* ================================================
+   Dark mode overrides for new components
+   ================================================ */
+
+[data-theme="dark"] .stale-waiting-alert {
+  background: rgba(251, 191, 36, 0.1);
+  border-color: rgba(251, 191, 36, 0.3);
+}
+
+[data-theme="dark"] .stale-waiting-alert h4 {
+  color: #fbbf24;
+}
+
+/* Mobile responsive for daily review */
+@media (max-width: 768px) {
+  .daily-review-header {
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  .daily-review-content {
+    padding: 1.5rem 1rem;
+  }
+
+  .timer-circle-container {
+    width: 160px;
+    height: 160px;
+  }
+
+  .timer-display {
+    font-size: 2rem;
+  }
+
+  .decision-grid {
+    gap: 0.5rem;
+  }
+
+  .decision-btn {
+    padding: 0.875rem 1rem;
+  }
+
+  .someday-item-actions {
+    opacity: 1;
+  }
+}

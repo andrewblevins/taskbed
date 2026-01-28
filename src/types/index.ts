@@ -1,17 +1,18 @@
-export type TaskStatus = 'active' | 'someday' | 'waiting';
+export type TaskStatus = 'active' | 'waiting';
 
 export interface Task {
   id: string;
   title: string;
   notes?: string;
   completed: boolean;
-  status: TaskStatus; // active = do now, someday = maybe later, waiting = blocked on someone
+  status: TaskStatus; // active = next action, waiting = blocked on something
   projectId?: string;
-  attributes: Record<string, string>; // flexible attributes like { energy: "high", context: "home" }
-  tags: string[]; // GTD contexts like @phone, @errands, @computer
+  attributes: Record<string, string>; // flexible attributes
+  tags: string[]; // GTD contexts like @deep, @shallow, @calls, @out, @offline
   createdAt: number;
   completedAt?: number;
   order?: number; // for sorting within groups
+  processed?: boolean; // true = has been clarified in inbox processing
   // Waiting-specific fields
   waitingFor?: string; // what you're waiting on
   waitingSince?: number; // when it was moved to waiting
@@ -19,6 +20,14 @@ export interface Task {
   areaId?: string;
   // Due date (optional - GTD says only use for hard deadlines)
   dueDate?: number; // timestamp of the due date
+}
+
+// Someday/Maybe items - separate from tasks, not committed to yet
+export interface SomedayItem {
+  id: string;
+  title: string;
+  notes?: string;
+  createdAt: number;
 }
 
 export interface Area {
@@ -43,7 +52,7 @@ export interface Project {
 
 export interface AttributeDefinition {
   id: string;
-  name: string; // e.g., "Energy", "Context"
+  name: string; // e.g., "Context"
   options: AttributeOption[];
 }
 
@@ -54,8 +63,6 @@ export interface AttributeOption {
 }
 
 export type ViewGrouping = {
-  attributeId: string; // which attribute to group by
-} | {
   type: 'project';
 } | {
   type: 'area';
