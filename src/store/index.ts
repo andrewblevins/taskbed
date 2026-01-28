@@ -110,6 +110,23 @@ interface TaskbedState {
   prevReviewStep: () => void;
   exitReview: () => void;
 
+  // Morning Focus state
+  dailyIntention: string;
+  todayTaskIds: string[];
+  todayDate: string;
+  morningFocusStep: number;
+  morningFocusInProgress: boolean;
+
+  // Morning Focus actions
+  startMorningFocus: () => void;
+  nextMorningFocusStep: () => void;
+  prevMorningFocusStep: () => void;
+  exitMorningFocus: () => void;
+  setDailyIntention: (intention: string) => void;
+  toggleTodayTask: (taskId: string) => void;
+  clearDailyData: () => void;
+  completeMorningFocus: (intention: string, taskIds: string[]) => void;
+
   // Task actions
   addTask: (title: string, options?: {
     projectId?: string;
@@ -202,6 +219,33 @@ export const useStore = create<TaskbedState>()(
       nextReviewStep: () => set((state) => ({ reviewStep: state.reviewStep + 1 })),
       prevReviewStep: () => set((state) => ({ reviewStep: Math.max(0, state.reviewStep - 1) })),
       exitReview: () => set({ reviewInProgress: false }),
+
+      // Morning Focus state
+      dailyIntention: '',
+      todayTaskIds: [],
+      todayDate: '',
+      morningFocusStep: 0,
+      morningFocusInProgress: false,
+
+      startMorningFocus: () => set({ morningFocusInProgress: true, morningFocusStep: 0 }),
+      nextMorningFocusStep: () => set((state) => ({ morningFocusStep: state.morningFocusStep + 1 })),
+      prevMorningFocusStep: () => set((state) => ({ morningFocusStep: Math.max(0, state.morningFocusStep - 1) })),
+      exitMorningFocus: () => set({ morningFocusInProgress: false }),
+      setDailyIntention: (intention) => set({ dailyIntention: intention }),
+      toggleTodayTask: (taskId) =>
+        set((state) => ({
+          todayTaskIds: state.todayTaskIds.includes(taskId)
+            ? state.todayTaskIds.filter((id) => id !== taskId)
+            : [...state.todayTaskIds, taskId],
+        })),
+      clearDailyData: () => set({ dailyIntention: '', todayTaskIds: [], todayDate: '' }),
+      completeMorningFocus: (intention, taskIds) =>
+        set({
+          dailyIntention: intention,
+          todayTaskIds: taskIds,
+          todayDate: new Date().toISOString().split('T')[0],
+          morningFocusInProgress: false,
+        }),
 
       addTask: (title, options = {}) =>
         set((state) => ({
@@ -598,11 +642,27 @@ export const useStore = create<TaskbedState>()(
       limit: 50,
       // Only track data changes, not UI state like reviewInProgress
       partialize: (state) => {
-        const { reviewInProgress, reviewStep, currentGrouping, selectedTagFilter, ...data } = state;
+        const {
+          reviewInProgress,
+          reviewStep,
+          currentGrouping,
+          selectedTagFilter,
+          morningFocusInProgress,
+          morningFocusStep,
+          dailyIntention,
+          todayTaskIds,
+          todayDate,
+          ...data
+        } = state;
         void reviewInProgress;
         void reviewStep;
         void currentGrouping;
         void selectedTagFilter;
+        void morningFocusInProgress;
+        void morningFocusStep;
+        void dailyIntention;
+        void todayTaskIds;
+        void todayDate;
         return data;
       },
     }

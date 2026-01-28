@@ -8,6 +8,7 @@ import { AttributeManager } from './components/AttributeManager';
 import { WeeklyReview } from './components/WeeklyReview';
 import { CompletedView } from './components/CompletedView';
 import { InboxView } from './components/InboxView';
+import { TodayView } from './components/TodayView';
 import { KeyboardShortcutsHelp } from './components/KeyboardShortcutsHelp';
 import { Auth } from './components/Auth';
 import { useStore, useTemporalStore, subscribeToRealtimeUpdates, setCurrentUserId } from './store';
@@ -17,10 +18,11 @@ import type { Task } from './types';
 import type { User } from '@supabase/supabase-js';
 import './App.css';
 
-type View = 'inbox' | 'tasks' | 'projects' | 'someday' | 'waiting' | 'completed';
+type View = 'inbox' | 'today' | 'tasks' | 'projects' | 'someday' | 'waiting' | 'completed';
 
 const HASH_TO_VIEW: Record<string, View> = {
   '#/inbox': 'inbox',
+  '#/today': 'today',
   '#/tasks': 'tasks',
   '#/projects': 'projects',
   '#/someday': 'someday',
@@ -30,6 +32,7 @@ const HASH_TO_VIEW: Record<string, View> = {
 
 const VIEW_TO_HASH: Record<View, string> = {
   inbox: '#/inbox',
+  today: '#/today',
   tasks: '#/tasks',
   projects: '#/projects',
   someday: '#/someday',
@@ -330,6 +333,17 @@ function App() {
     const unsubscribe = subscribeToRealtimeUpdates();
     return () => unsubscribe();
   }, [user]);
+
+  // Clear daily data when date changes
+  const todayDate = useStore((s) => s.todayDate);
+  const clearDailyData = useStore((s) => s.clearDailyData);
+  useEffect(() => {
+    const today = new Date().toISOString().split('T')[0];
+    if (todayDate && todayDate !== today) {
+      clearDailyData();
+    }
+  }, [todayDate, clearDailyData]);
+
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const tasks = useStore((s) => s.tasks);
   const projects = useStore((s) => s.projects);
@@ -566,6 +580,17 @@ function App() {
             </svg>
             Inbox
           </button>
+          <button
+            className={`nav-item ${currentView === 'today' ? 'active' : ''}`}
+            onClick={() => handleViewChange('today')}
+          >
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="9" cy="9" r="7" />
+              <circle cx="9" cy="9" r="2" fill="currentColor" />
+              <path d="M9 4v2M9 12v2M4 9h2M12 9h2" />
+            </svg>
+            Today
+          </button>
 
           <div className="nav-divider" />
 
@@ -698,6 +723,10 @@ function App() {
       <div className="main-content">
         {currentView === 'inbox' && (
           <InboxView onSelectTask={(task: Task) => setSelectedTaskId(task.id)} />
+        )}
+
+        {currentView === 'today' && (
+          <TodayView onSelectTask={(task: Task) => setSelectedTaskId(task.id)} />
         )}
 
         {currentView === 'tasks' && (
