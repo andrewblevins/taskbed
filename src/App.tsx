@@ -529,23 +529,25 @@ function App() {
           </div>
         </div>
         <div className="sidebar-nav">
+          {/* Things-style nav items with filled colored icons */}
           <button
             className={`nav-item ${currentView === 'inbox' ? 'active' : ''}`}
+            data-view="inbox"
             onClick={() => handleViewChange('inbox')}
           >
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M3 9h12M9 3v12" />
+            <svg className="nav-icon" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+              <rect x="3" y="3" width="14" height="14" rx="3" fill="#147efb"/>
             </svg>
             Inbox
           </button>
           <button
             className={`nav-item ${currentView === 'today' ? 'active' : ''}`}
+            data-view="today"
             onClick={() => handleViewChange('today')}
           >
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="9" cy="9" r="7" />
-              <circle cx="9" cy="9" r="2" fill="currentColor" />
-              <path d="M9 4v2M9 12v2M4 9h2M12 9h2" />
+            <svg className="nav-icon" width="20" height="20" viewBox="0 0 20 20">
+              <circle cx="10" cy="10" r="8" fill="#ffcc00"/>
+              <text x="10" y="14" textAnchor="middle" fontSize="10" fontWeight="600" fill="#000">{new Date().getDate()}</text>
             </svg>
             Today
           </button>
@@ -554,21 +556,22 @@ function App() {
 
           <button
             className={`nav-item ${currentView === 'tasks' ? 'active' : ''}`}
+            data-view="tasks"
             onClick={() => handleViewChange('tasks')}
           >
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="9" cy="9" r="7" />
-              <path d="M6 9l2 2 4-4" />
+            <svg className="nav-icon" width="20" height="20" viewBox="0 0 20 20">
+              <rect x="3" y="3" width="14" height="14" rx="3" fill="#5856d6"/>
             </svg>
-            Tasks
+            Anytime
           </button>
           <button
             className={`nav-item ${currentView === 'projects' ? 'active' : ''}`}
+            data-view="projects"
             onClick={() => handleViewChange('projects')}
           >
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="2">
-              <rect x="3" y="3" width="12" height="12" rx="2" />
-              <path d="M3 7h12" />
+            <svg className="nav-icon" width="20" height="20" viewBox="0 0 20 20">
+              <circle cx="10" cy="10" r="7" fill="none" stroke="#8a8a8e" strokeWidth="1.5"/>
+              <circle cx="10" cy="10" r="4" fill="#8a8a8e"/>
             </svg>
             Projects
           </button>
@@ -577,33 +580,36 @@ function App() {
 
           <button
             className={`nav-item ${currentView === 'someday' ? 'active' : ''}`}
+            data-view="someday"
             onClick={() => handleViewChange('someday')}
           >
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="9" cy="9" r="7" />
-              <path d="M9 5v4l3 2" />
+            <svg className="nav-icon" width="20" height="20" viewBox="0 0 20 20">
+              <rect x="3" y="3" width="14" height="14" rx="3" fill="#af8f60"/>
             </svg>
             Someday
           </button>
           <button
             className={`nav-item ${currentView === 'waiting' ? 'active' : ''}`}
+            data-view="waiting"
             onClick={() => handleViewChange('waiting')}
           >
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="9" cy="9" r="7" />
-              <path d="M6 9h6" />
+            <svg className="nav-icon" width="20" height="20" viewBox="0 0 20 20">
+              <circle cx="10" cy="10" r="7" fill="none" stroke="#8a8a8e" strokeWidth="1.5"/>
+              <path d="M10 6v4l3 2" fill="none" stroke="#8a8a8e" strokeWidth="1.5" strokeLinecap="round"/>
             </svg>
             Waiting For
           </button>
 
           <button
             className={`nav-item ${currentView === 'completed' ? 'active' : ''}`}
+            data-view="logbook"
             onClick={() => handleViewChange('completed')}
           >
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M4 9l4 4L14 5" />
+            <svg className="nav-icon" width="20" height="20" viewBox="0 0 20 20">
+              <rect x="3" y="3" width="14" height="14" rx="3" fill="#34c759"/>
+              <path d="M7 10l2 2 4-4" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
-            Completed
+            Logbook
           </button>
 
           {reviewStep > 0 ? (
@@ -612,9 +618,9 @@ function App() {
                 className="nav-item review-nav resume"
                 onClick={() => { resumeReview(); setSidebarOpen(false); }}
               >
-                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M9 2v4M9 12v4M2 9h4M12 9h4" />
-                  <circle cx="9" cy="9" r="3" />
+                <svg className="nav-icon" width="20" height="20" viewBox="0 0 20 20">
+                  <circle cx="10" cy="10" r="7" fill="none" stroke="#007aff" strokeWidth="1.5"/>
+                  <circle cx="10" cy="10" r="3" fill="#007aff"/>
                 </svg>
                 Resume Review
                 <span className="review-step-badge">Step {reviewStep + 1}</span>
@@ -631,9 +637,9 @@ function App() {
               className="nav-item review-nav"
               onClick={() => { startReview(); setSidebarOpen(false); }}
             >
-              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M9 2v4M9 12v4M2 9h4M12 9h4" />
-                <circle cx="9" cy="9" r="3" />
+              <svg className="nav-icon" width="20" height="20" viewBox="0 0 20 20">
+                <circle cx="10" cy="10" r="7" fill="none" stroke="#007aff" strokeWidth="1.5"/>
+                <circle cx="10" cy="10" r="3" fill="#007aff"/>
               </svg>
               Weekly Review
             </button>

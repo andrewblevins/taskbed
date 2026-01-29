@@ -1,32 +1,48 @@
-/* Things-inspired design */
+/* Things 3 inspired design - pixel-perfect recreation */
 :root {
-  --color-bg: #f5f5f7;
+  /* Things uses pure white content with very subtle gray chrome */
+  --color-bg: #ffffff;
   --color-surface: #ffffff;
-  --color-text: #1d1d1f;
-  --color-text-secondary: #86868b;
-  --color-text-tertiary: #aeaeb2;
-  --color-border: #e5e5e7;
-  --color-border-light: #f0f0f2;
+  --color-sidebar: #f9f9f9;
+  --color-text: #000000;
+  --color-text-secondary: #8a8a8e;
+  --color-text-tertiary: #c7c7cc;
+  --color-border: #e5e5e5;
+  --color-border-light: #efefef;
 
-  /* Energy colors - subtle, refined */
-  --color-high: #ff6b6b;
-  --color-medium: #feca57;
-  --color-low: #5cd85a;
+  /* Things icon colors */
+  --color-inbox: #147efb;
+  --color-today: #ffcc00;
+  --color-upcoming: #ff2d55;
+  --color-anytime: #5856d6;
+  --color-someday: #af8f60;
+  --color-logbook: #34c759;
 
-  /* Accent */
-  --color-accent: #007aff;
-  --color-accent-hover: #0056b3;
+  /* Accent - Things blue */
+  --color-accent: #147efb;
+  --color-accent-hover: #0b6fda;
+  --color-accent-alpha: rgba(20, 126, 251, 0.1);
 
-  /* Shadows */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
-  --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.12);
+  /* Task states */
+  --color-complete: #34c759;
+  --color-today-tag: #ff3b30;
 
-  /* Radius */
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 16px;
-  --radius-xl: 20px;
+  /* Shadows - Things uses very subtle shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.03);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.12);
+
+  /* Radius - Things uses softer, more rounded corners */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+
+  /* Things-specific spacing */
+  --task-padding-y: 10px;
+  --task-padding-x: 0;
+  --checkbox-size: 18px;
+  --sidebar-width: 240px;
 }
 
 * {
@@ -46,10 +62,10 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
-/* Sidebar */
+/* Sidebar - Things style */
 .sidebar {
-  width: 220px;
-  background: var(--color-surface);
+  width: var(--sidebar-width);
+  background: var(--color-sidebar);
   border-right: 1px solid var(--color-border-light);
   display: flex;
   flex-direction: column;
@@ -57,55 +73,75 @@ body {
 }
 
 .sidebar-header {
-  padding: 1.5rem 1.25rem;
-  border-bottom: 1px solid var(--color-border-light);
+  padding: 16px 16px 8px;
+  border-bottom: none;
 }
 
 .sidebar-header h1 {
-  font-size: 1.25rem;
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: 600;
   margin: 0;
-  color: var(--color-text);
-  letter-spacing: -0.02em;
+  color: var(--color-text-secondary);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
 }
 
 .sidebar-nav {
   flex: 1;
-  padding: 1rem 0.75rem;
+  padding: 4px 8px;
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 1px;
 }
 
 .nav-item {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.625rem 0.75rem;
-  font-size: 0.9375rem;
-  font-weight: 500;
-  color: var(--color-text-secondary);
+  gap: 10px;
+  padding: 6px 8px;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--color-text);
   background: transparent;
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: 6px;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: background-color 0.1s ease;
   text-align: left;
   width: 100%;
 }
 
 .nav-item:hover {
-  background: var(--color-bg);
-  color: var(--color-text);
+  background: rgba(0, 0, 0, 0.04);
 }
 
 .nav-item.active {
-  background: var(--color-accent);
-  color: white;
+  background: rgba(0, 0, 0, 0.06);
+  font-weight: 500;
 }
 
-.nav-item svg {
+.nav-item svg,
+.nav-icon {
   flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+}
+
+/* Things-style colored icons */
+.nav-item[data-view="inbox"] .nav-icon { color: var(--color-inbox); }
+.nav-item[data-view="today"] .nav-icon { color: var(--color-today); }
+.nav-item[data-view="upcoming"] .nav-icon { color: var(--color-upcoming); }
+.nav-item[data-view="anytime"] .nav-icon,
+.nav-item[data-view="tasks"] .nav-icon { color: var(--color-anytime); }
+.nav-item[data-view="someday"] .nav-icon { color: var(--color-someday); }
+.nav-item[data-view="logbook"] .nav-icon { color: var(--color-logbook); }
+
+/* Nav item badge (count) */
+.nav-badge {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--color-text-secondary);
 }
 
 .sidebar-footer {
@@ -113,7 +149,7 @@ body {
   border-top: 1px solid var(--color-border-light);
 }
 
-/* Main Content */
+/* Main Content - Things 3 style */
 .main-content {
   flex: 1;
   display: flex;
@@ -124,28 +160,42 @@ body {
 
 .content-header {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
-  padding: 1.5rem 2rem;
+  gap: 12px;
+  padding: 20px 24px 16px;
   background: var(--color-surface);
-  border-bottom: 1px solid var(--color-border-light);
+  border-bottom: none;
   flex-shrink: 0;
 }
 
 .content-header h2 {
-  font-size: 1.5rem;
+  font-size: 26px;
   font-weight: 700;
   margin: 0;
   color: var(--color-text);
   letter-spacing: -0.02em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Header icon (star for Today, etc) */
+.content-header h2::before {
+  display: none;
+}
+
+.header-count {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--color-text-secondary);
 }
 
 .content-body {
   flex: 1;
-  padding: 2rem;
+  padding: 0 24px 24px;
   overflow-y: auto;
-  max-width: 800px;
-  margin: 0 auto;
+  max-width: 680px;
   width: 100%;
 }
 
@@ -240,78 +290,49 @@ body {
 }
 
 /* Task group */
+/* Task Groups - Things 3 style (minimal, no cards) */
 .task-group {
-  background: var(--color-surface);
-  border-radius: var(--radius-xl);
-  padding: 1.25rem;
-  box-shadow: var(--shadow-sm);
-  transition: box-shadow 0.2s ease;
+  background: transparent;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
+  margin-bottom: 24px;
 }
 
 .task-group:hover {
-  box-shadow: var(--shadow-md);
+  box-shadow: none;
 }
 
+/* Section header - Things uses blue text */
 .group-header {
-  font-size: 0.75rem;
+  font-size: 13px;
   font-weight: 600;
-  color: var(--color-text-secondary);
-  margin: 0 0 1rem 0;
-  padding: 0 0 0.75rem 0;
-  border-bottom: 1px solid var(--color-border-light);
+  color: var(--color-accent);
+  margin: 0 0 8px 0;
+  padding: 0;
+  border-bottom: none;
   display: flex;
   align-items: center;
-  gap: 0.625rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  gap: 8px;
+  text-transform: none;
+  letter-spacing: 0;
 }
 
 .group-header::before {
-  content: '';
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: currentColor;
-  flex-shrink: 0;
-}
-
-/* Energy level colors */
-.task-group:has(.group-header[style*="ef4444"]) .group-header::before,
-.task-group:has(.group-header[style*="rgb(239, 68, 68)"]) .group-header::before {
-  background: var(--color-high);
-}
-
-.task-group:has(.group-header[style*="f59e0b"]) .group-header::before,
-.task-group:has(.group-header[style*="rgb(245, 158, 11)"]) .group-header::before {
-  background: var(--color-medium);
-}
-
-.task-group:has(.group-header[style*="22c55e"]) .group-header::before,
-.task-group:has(.group-header[style*="rgb(34, 197, 94)"]) .group-header::before {
-  background: var(--color-low);
+  display: none;
 }
 
 .group-header.unset {
-  color: var(--color-text-tertiary);
-}
-
-.group-header.unset::before {
-  background: var(--color-text-tertiary);
-}
-
-/* Remove the old border-left styling */
-.group-header {
-  border-left: none !important;
-  padding-left: 0 !important;
+  color: var(--color-text-secondary);
 }
 
 .group-count {
-  font-size: 0.6875rem;
-  font-weight: 600;
-  color: var(--color-text-tertiary);
-  background: var(--color-bg);
-  padding: 0.1875rem 0.5rem;
-  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--color-text-secondary);
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
   margin-left: auto;
 }
 
@@ -323,18 +344,24 @@ body {
 }
 
 /* Task item */
+/* Task Item - Things 3 style */
 .task-item {
   display: flex;
   align-items: flex-start;
-  gap: 0.875rem;
-  padding: 0.75rem 0.5rem;
-  border-radius: var(--radius-md);
-  transition: background-color 0.15s ease;
+  gap: 10px;
+  padding: 8px 0;
+  border-radius: 0;
+  transition: none;
   cursor: pointer;
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.task-item:last-child {
+  border-bottom: none;
 }
 
 .task-item:hover {
-  background: var(--color-bg);
+  background: transparent;
 }
 
 .task-item:hover .task-delete {
@@ -342,15 +369,15 @@ body {
 }
 
 .task-delete {
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   border: none;
   background: transparent;
   color: var(--color-text-tertiary);
-  font-size: 18px;
+  font-size: 16px;
   cursor: pointer;
   opacity: 0;
-  transition: opacity 0.15s ease, color 0.15s ease;
+  transition: opacity 0.1s ease;
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -363,9 +390,10 @@ body {
 }
 
 /* Checkbox - Things style circular */
+/* Checkbox - Things 3 style (thin circle, no fill) */
 .task-checkbox {
-  width: 22px;
-  height: 22px;
+  width: var(--checkbox-size);
+  height: var(--checkbox-size);
   border-radius: 50%;
   background: none;
   border: none;
@@ -375,41 +403,41 @@ body {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  margin-top: 1px;
-  transition: transform 0.2s ease;
+  margin-top: 2px;
+  transition: transform 0.15s ease;
   position: relative;
-  color: var(--color-border);
+  color: var(--color-text-tertiary);
 }
 
 .task-checkbox:hover {
-  color: var(--color-text-tertiary);
-  transform: scale(1.1);
+  color: var(--color-text-secondary);
+  transform: scale(1.05);
 }
 
 .task-checkbox .checkbox-circle {
-  transition: stroke 0.2s ease, fill 0.2s ease;
-  fill: var(--color-surface);
+  transition: stroke 0.15s ease, fill 0.15s ease;
+  fill: transparent;
+  stroke-width: 1.5;
 }
 
 .task-checkbox.completed {
-  animation: checkboxPop 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  animation: checkboxPop 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .task-checkbox.completed .checkbox-circle {
-  stroke: var(--color-low);
-  fill: var(--color-low);
+  stroke: var(--color-complete);
+  fill: var(--color-complete);
 }
 
 .task-checkbox.completed .checkbox-check {
   stroke-dasharray: 20;
   stroke-dashoffset: 20;
-  animation: checkDraw 0.3s ease forwards 0.1s;
+  animation: checkDraw 0.2s ease forwards 0.05s;
 }
 
 @keyframes checkboxPop {
   0% { transform: scale(1); }
-  40% { transform: scale(1.3); }
-  70% { transform: scale(0.95); }
+  50% { transform: scale(1.15); }
   100% { transform: scale(1); }
 }
 
@@ -418,47 +446,44 @@ body {
 }
 
 /* Task content */
+/* Task content - Things 3 style */
 .task-content {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 2px;
   min-width: 0;
   flex: 1;
-  padding-top: 2px;
+  padding-top: 0;
 }
 
 .task-title {
-  font-size: 0.9375rem;
+  font-size: 14px;
   font-weight: 400;
   color: var(--color-text);
-  line-height: 1.45;
+  line-height: 1.4;
   word-wrap: break-word;
-  transition: color 0.3s ease, opacity 0.3s ease;
+  transition: color 0.2s ease, opacity 0.2s ease;
 }
 
 .task-title.completed {
   color: var(--color-text-tertiary);
   text-decoration: line-through;
   text-decoration-color: var(--color-text-tertiary);
-  opacity: 0.6;
+  opacity: 0.5;
 }
 
+/* Project name below task - Things style */
 .task-project {
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: var(--color-text-tertiary);
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--color-text-secondary);
   display: inline-flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0;
 }
 
 .task-project::before {
-  content: '';
-  width: 6px;
-  height: 6px;
-  border-radius: 2px;
-  background: var(--color-accent);
-  opacity: 0.6;
+  display: none;
 }
 
 /* Task meta container */
@@ -486,45 +511,35 @@ body {
 }
 
 /* Due date in task list */
+/* Due date - Things 3 style (red "today" flag) */
 .task-due-date {
-  font-size: 0.6875rem;
+  font-size: 11px;
   font-weight: 500;
-  color: var(--color-text-secondary);
+  color: var(--color-today-tag);
   display: inline-flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0;
+  margin-left: auto;
 }
 
 .task-due-date::before {
-  content: '';
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: var(--color-text-tertiary);
+  display: none;
 }
 
 .task-due-date.due-soon {
-  color: var(--color-medium);
-}
-
-.task-due-date.due-soon::before {
-  background: var(--color-medium);
+  color: var(--color-today-tag);
 }
 
 .task-due-date.overdue {
-  color: var(--color-high);
+  color: var(--color-today-tag);
 }
 
-.task-due-date.overdue::before {
-  background: var(--color-high);
-}
-
-/* Flat task list */
+/* Flat task list - Things style (no container) */
 .task-list {
-  background: var(--color-surface);
-  border-radius: var(--radius-xl);
-  padding: 0.75rem;
-  box-shadow: var(--shadow-sm);
+  background: transparent;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
 }
 
 /* Task detail overlay */

@@ -124,8 +124,13 @@ export function InboxView({ onSelectTask }: InboxViewProps) {
   return (
     <>
       <header className="content-header">
-        <h2>Inbox</h2>
-        <span className="header-count">{inboxItems.length} items</span>
+        <h2>
+          <svg width="24" height="24" viewBox="0 0 24 24" style={{ marginRight: '8px' }}>
+            <rect x="4" y="4" width="16" height="16" rx="4" fill="#147efb"/>
+          </svg>
+          Inbox
+        </h2>
+        <span className="header-count">{inboxItems.length}</span>
         {inboxItems.length > 0 && (
           <button className="process-inbox-btn" onClick={startDailyReview}>
             Process Inbox

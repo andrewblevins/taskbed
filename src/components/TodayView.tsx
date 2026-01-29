@@ -47,7 +47,13 @@ export function TodayView({ onSelectTask }: TodayViewProps) {
     return (
       <>
         <header className="content-header">
-          <h2>Today</h2>
+          <h2>
+            <svg width="24" height="24" viewBox="0 0 24 24" style={{ marginRight: '8px' }}>
+              <circle cx="12" cy="12" r="10" fill="#ffcc00"/>
+              <text x="12" y="16" textAnchor="middle" fontSize="12" fontWeight="600" fill="#000">{new Date().getDate()}</text>
+            </svg>
+            Today
+          </h2>
         </header>
         <main className="content-body">
           <div className="today-empty">
@@ -71,7 +77,13 @@ export function TodayView({ onSelectTask }: TodayViewProps) {
   return (
     <>
       <header className="content-header">
-        <h2>Today</h2>
+        <h2>
+          <svg width="24" height="24" viewBox="0 0 24 24" style={{ marginRight: '8px' }}>
+            <circle cx="12" cy="12" r="10" fill="#ffcc00"/>
+            <text x="12" y="16" textAnchor="middle" fontSize="12" fontWeight="600" fill="#000">{new Date().getDate()}</text>
+          </svg>
+          Today
+        </h2>
         <button className="today-redo-btn" onClick={() => { clearDailyData(); startMorningFocus(); }}>
           Redo focus
         </button>
