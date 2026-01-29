@@ -22,11 +22,13 @@ import { useStore } from '../store';
 import { ProjectCompletionDialog } from './ProjectCompletionDialog';
 import type { Project, Area } from '../types';
 
-// Draggable Project Item
+// Draggable Project Item with expandable task list
 function DraggableProject({ project, onComplete }: { project: Project; onComplete: (project: Project) => void }) {
   const [isEditing, setIsEditing] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
   const [name, setName] = useState(project.name);
-  const { updateProject, tasks } = useStore();
+  const [newTaskTitle, setNewTaskTitle] = useState('');
+  const { updateProject, tasks, addTask, toggleTask } = useStore();
 
   const {
     attributes,
@@ -43,7 +45,8 @@ function DraggableProject({ project, onComplete }: { project: Project; onComplet
     opacity: isDragging ? 0.5 : 1,
   };
 
-  const taskCount = tasks.filter((t) => t.projectId === project.id && !t.completed).length;
+  const projectTasks = tasks.filter((t) => t.projectId === project.id && !t.completed);
+  const taskCount = projectTasks.length;
 
   const handleSave = () => {
     if (name.trim() && name !== project.name) {
@@ -57,6 +60,18 @@ function DraggableProject({ project, onComplete }: { project: Project; onComplet
   const handleCircleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     onComplete(project);
+  };
+
+  const handleAddTask = () => {
+    if (newTaskTitle.trim()) {
+      addTask(newTaskTitle.trim(), { projectId: project.id, processed: true });
+      setNewTaskTitle('');
+    }
+  };
+
+  const handleToggleExpand = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsExpanded(!isExpanded);
   };
 
   if (isEditing) {
@@ -83,26 +98,71 @@ function DraggableProject({ project, onComplete }: { project: Project; onComplet
   }
 
   return (
-    <div ref={setNodeRef} style={style} className="pv-project">
-      <button className="pv-drag-handle" {...attributes} {...listeners}>
-        <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
-          <circle cx="3" cy="2" r="1.5" />
-          <circle cx="9" cy="2" r="1.5" />
-          <circle cx="3" cy="6" r="1.5" />
-          <circle cx="9" cy="6" r="1.5" />
-          <circle cx="3" cy="10" r="1.5" />
-          <circle cx="9" cy="10" r="1.5" />
-        </svg>
-      </button>
-      <button className="pv-project-icon" onClick={handleCircleClick} title="Complete or cancel project">
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2">
-          <circle cx="10" cy="10" r="7" />
-        </svg>
-      </button>
-      <span className="pv-project-name" onClick={() => setIsEditing(true)}>
-        {project.name}
-      </span>
-      <span className="pv-task-count">{taskCount}</span>
+    <div ref={setNodeRef} style={style} className={`pv-project ${isExpanded ? 'expanded' : ''}`}>
+      <div className="pv-project-header">
+        <button className="pv-drag-handle" {...attributes} {...listeners}>
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+            <circle cx="3" cy="2" r="1.5" />
+            <circle cx="9" cy="2" r="1.5" />
+            <circle cx="3" cy="6" r="1.5" />
+            <circle cx="9" cy="6" r="1.5" />
+            <circle cx="3" cy="10" r="1.5" />
+            <circle cx="9" cy="10" r="1.5" />
+          </svg>
+        </button>
+        <button className="pv-project-icon" onClick={handleCircleClick} title="Complete or cancel project">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="10" cy="10" r="7" />
+          </svg>
+        </button>
+        <span className="pv-project-name" onClick={() => setIsEditing(true)}>
+          {project.name}
+        </span>
+        <span className="pv-task-count">{taskCount}</span>
+        <button className="pv-expand-btn" onClick={handleToggleExpand}>
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2">
+            {isExpanded ? (
+              <path d="M2 8L6 4L10 8" />
+            ) : (
+              <path d="M2 4L6 8L10 4" />
+            )}
+          </svg>
+        </button>
+      </div>
+
+      {isExpanded && (
+        <div className="pv-project-tasks">
+          {projectTasks.map((task) => (
+            <div key={task.id} className="pv-task-item">
+              <button
+                className="pv-task-checkbox"
+                onClick={() => toggleTask(task.id)}
+              >
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <circle cx="8" cy="8" r="6" />
+                </svg>
+              </button>
+              <span className="pv-task-title">{task.title}</span>
+            </div>
+          ))}
+          <div className="pv-add-task">
+            <input
+              type="text"
+              value={newTaskTitle}
+              onChange={(e) => setNewTaskTitle(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleAddTask();
+                e.stopPropagation();
+              }}
+              onClick={(e) => e.stopPropagation()}
+              placeholder="Add task..."
+            />
+            {newTaskTitle.trim() && (
+              <button onClick={handleAddTask}>Add</button>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

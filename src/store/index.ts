@@ -807,7 +807,7 @@ export const useStore = create<TaskbedState>()(
     {
       name: 'taskbed-storage',
       storage: createJSONStorage(() => fileBackedStorage),
-      version: 3,
+      version: 4,
       migrate: (persistedState, version) => {
         const state = persistedState as TaskbedState;
         if (version < 2) {
@@ -830,6 +830,13 @@ export const useStore = create<TaskbedState>()(
           state.dailyReviewInProgress = false;
           state.dailyReviewStep = 0;
           state.dailyReviewProcessedCount = 0;
+        }
+        if (version < 4) {
+          // Update to new mode-based contexts
+          state.availableTags = ['@deep', '@shallow', '@calls', '@out', '@offline'];
+          state.currentGrouping = { type: 'project' };
+          // Remove energy attribute
+          state.attributes = [];
         }
         return state;
       },
